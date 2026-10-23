@@ -146,9 +146,6 @@
 <script>
 'use strict';
 
-/* ============================================================
-   고정 상수
-   ============================================================ */
 const LANES = 2;
 const LANE_KEYS = { top: 'KeyD', bottom: 'KeyK' };
 const JUDGE_TOLERANCE = 40;
@@ -159,17 +156,14 @@ const FAIL_LIMIT = 3;
 const SAVE_KEY = 'rhythm-dodge-save-v1';
 const DEFAULT_SAVE = { bestScore: 0, muted: false };
 
-/* ===== 레이아웃 상수 ===== */
-const JUDGE_LINE_X = 100;
-const NOTE_START_X = 520;
-const NOTE_W = 80;
-const NOTE_H = 32;
+/* ===== 레이아웃 상수 (수정됨) ===== */
+const JUDGE_LINE_X = 120;          // 판정선 조금 더 안쪽으로
+const NOTE_START_X = 450;          // 화면 오른쪽 안쪽에서 생성
+const NOTE_W = 100;                // 노트 가로 100
+const NOTE_H = 40;                 // 노트 세로 40
 const LANE_TOP_Y = 0.30;
 const LANE_BOTTOM_Y = 0.70;
 
-/* ============================================================
-   난이도 변수
-   ============================================================ */
 let NOTE_SPEED = 180;
 
 function loadSave() {
@@ -181,9 +175,7 @@ function loadSave() {
       typeof parsed !== 'object' || parsed === null ||
       typeof parsed.bestScore !== 'number' || !isFinite(parsed.bestScore) ||
       typeof parsed.muted !== 'boolean'
-    ) {
-      throw new Error('corrupt');
-    }
+    ) throw new Error('corrupt');
     return { bestScore: parsed.bestScore, muted: parsed.muted };
   } catch {
     return { ...DEFAULT_SAVE };
@@ -196,15 +188,9 @@ function saveSave(data) {
 let saved = loadSave();
 
 const round = {
-  running: false,
-  paused: false,
-  gameOver: false,
-  timeLeft: ROUND_SECONDS,
-  success: 0,
-  fail: 0,
-  notes: [],
-  spawnAcc: 0,
-  lastTime: 0,
+  running: false, paused: false, gameOver: false,
+  timeLeft: ROUND_SECONDS, success: 0, fail: 0,
+  notes: [], spawnAcc: 0, lastTime: 0,
 };
 
 const canvas = document.getElementById('game');
@@ -230,8 +216,7 @@ function ensureAudio() {
   if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
 }
 function playGameOverSound() {
-  if (saved.muted) return;
-  if (!audioCtx) return;
+  if (saved.muted || !audioCtx) return;
   const now = audioCtx.currentTime;
   const osc = audioCtx.createOscillator();
   const gain = audioCtx.createGain();
@@ -253,38 +238,21 @@ function getJudgeLineX() {
 }
 
 function resetRound() {
-  round.running = true;
-  round.paused = false;
-  round.gameOver = false;
-  round.timeLeft = ROUND_SECONDS;
-  round.success = 0;
-  round.fail = 0;
-  round.notes = [];
-  round.spawnAcc = 0;
-  round.lastTime = performance.now();
-  hideOverlay();
-  updateUI();
+  round.running = true; round.paused = false; round.gameOver = false;
+  round.timeLeft = ROUND_SECONDS; round.success = 0; round.fail = 0;
+  round.notes = []; round.spawnAcc = 0; round.lastTime = performance.now();
+  hideOverlay(); updateUI();
 }
-
-function startGame() {
-  ensureAudio();
-  resetRound();
-}
-
+function startGame() { ensureAudio(); resetRound(); }
 function endGame(isSuccess) {
-  round.running = false;
-  round.gameOver = true;
-  round.notes = [];
+  round.running = false; round.gameOver = true; round.notes = [];
   if (round.success > saved.bestScore) {
-    saved.bestScore = round.success;
-    saveSave(saved);
+    saved.bestScore = round.success; saveSave(saved);
   }
   playGameOverSound();
   showOverlay(
     isSuccess ? '성공!' : '게임 오버',
-    isSuccess
-      ? `30초 생존 성공! 성공 ${round.success}회`
-      : `실패 3회 도달. 성공 ${round.success}회`,
+    isSuccess ? `30초 생존 성공! 성공 ${round.success}회` : `실패 3회 도달. 성공 ${round.success}회`,
     '다시 시작'
   );
   updateUI();
@@ -301,19 +269,15 @@ function togglePause() {
 }
 
 function toggleMute() {
-  saved.muted = !saved.muted;
-  saveSave(saved);
-  updateMuteButton();
+  saved.muted = !saved.muted; saveSave(saved); updateMuteButton();
 }
-
 function updateMuteButton() {
   btnMute.textContent = `음소거: ${saved.muted ? 'ON' : 'OFF'} (M)`;
   btnMute.classList.toggle('active', saved.muted);
 }
 
 function findNearestNote(lane) {
-  let best = null;
-  let bestDist = Infinity;
+  let best = null, bestDist = Infinity;
   const judgeX = getJudgeLineX();
   for (const n of round.notes) {
     if (n.lane !== lane || n.hit) continue;
@@ -328,18 +292,14 @@ function judge(lane) {
   const judgeX = getJudgeLineX();
   const near = findNearestNote(lane);
   console.log(`[INPUT] lane=${lane} near=${near ? 'Y' : 'N'}`);
-
   if (!near) return;
   const dist = Math.abs(near.x - judgeX);
   if (dist > NEAR_RANGE) return;
-
   if (dist <= JUDGE_TOLERANCE) {
-    near.hit = true;
-    round.success += 1;
+    near.hit = true; round.success += 1;
     console.log(`[HIT] lane=${lane} success=${round.success}`);
   } else {
-    near.hit = true;
-    round.fail += 1;
+    near.hit = true; round.fail += 1;
     console.log(`[MISS] lane=${lane} fail=${round.fail}`);
     if (round.fail >= FAIL_LIMIT) { endGame(false); return; }
   }
@@ -348,96 +308,63 @@ function judge(lane) {
 
 function loop(now) {
   requestAnimationFrame(loop);
-
   if (!round.running || round.paused || round.gameOver) {
-    round.lastTime = now;
-    render();
-    return;
+    round.lastTime = now; render(); return;
   }
-
   const dt = Math.min((now - round.lastTime) / 1000, 0.1);
   round.lastTime = now;
-
   round.timeLeft -= dt;
   if (round.timeLeft <= 0) {
-    round.timeLeft = 0;
-    endGame(true);
-    render();
-    return;
+    round.timeLeft = 0; endGame(true); render(); return;
   }
 
   round.spawnAcc += dt * 1000;
   while (round.spawnAcc >= SPAWN_INTERVAL) {
     round.spawnAcc -= SPAWN_INTERVAL;
     const lane = Math.random() < 0.5 ? 0 : 1;
-    round.notes.push({
-      lane,
-      x: NOTE_START_X,
-      hit: false,
-    });
+    round.notes.push({ lane, x: NOTE_START_X, hit: false });
   }
 
-  for (const n of round.notes) {
-    n.x -= NOTE_SPEED * dt;
-  }
+  for (const n of round.notes) { n.x -= NOTE_SPEED * dt; }
 
   const judgeX = getJudgeLineX();
   for (const n of round.notes) {
     if (n.hit) continue;
     if (n.x < judgeX - JUDGE_TOLERANCE) {
-      n.hit = true;
-      round.fail += 1;
+      n.hit = true; round.fail += 1;
       console.log(`[MISS-AUTO] lane=${n.lane} fail=${round.fail}`);
       if (round.fail >= FAIL_LIMIT) { endGame(false); break; }
     }
   }
 
   round.notes = round.notes.filter(n => n.x > -100);
-
-  updateUI();
-  render();
+  updateUI(); render();
 }
 
 function render() {
-  const W = canvas.width;
-  const H = canvas.height;
+  const W = canvas.width, H = canvas.height;
   const judgeX = getJudgeLineX();
 
   ctx.clearRect(0, 0, W, H);
   ctx.fillStyle = '#0d1117';
   ctx.fillRect(0, 0, W, H);
 
-  // 레인 구분선 (가로, 중앙)
-  ctx.strokeStyle = '#21262d';
-  ctx.lineWidth = 1;
-  ctx.beginPath();
-  ctx.moveTo(0, H * 0.5);
-  ctx.lineTo(W, H * 0.5);
-  ctx.stroke();
+  ctx.strokeStyle = '#21262d'; ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.moveTo(0, H * 0.5); ctx.lineTo(W, H * 0.5); ctx.stroke();
 
-  // 판정선 ±tolerance 영역
   ctx.fillStyle = 'rgba(240, 198, 116, 0.10)';
   ctx.fillRect(judgeX - JUDGE_TOLERANCE, 0, JUDGE_TOLERANCE * 2, H);
 
-  // 판정선 (세로)
-  ctx.strokeStyle = '#f0c674';
-  ctx.lineWidth = 3;
-  ctx.beginPath();
-  ctx.moveTo(judgeX, 0);
-  ctx.lineTo(judgeX, H);
-  ctx.stroke();
+  ctx.strokeStyle = '#f0c674'; ctx.lineWidth = 3;
+  ctx.beginPath(); ctx.moveTo(judgeX, 0); ctx.lineTo(judgeX, H); ctx.stroke();
 
-  // 레인 라벨
-  ctx.fillStyle = '#8b949e';
-  ctx.font = 'bold 14px system-ui, sans-serif';
-  ctx.textAlign = 'left';
-  ctx.textBaseline = 'middle';
+  ctx.fillStyle = '#8b949e'; ctx.font = 'bold 14px system-ui, sans-serif';
+  ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
   ctx.fillText('D (위)', 8, H * 0.12);
   ctx.fillText('K (아래)', 8, H * 0.88);
 
-  // 노트 (판정 완료된 노트는 그리지 않음)
   for (const n of round.notes) {
-    if (n.hit) continue;  // ← 판정 완료된 노트는 건너뜀 (화면에서 사라짐)
+    if (n.hit) continue;
     const y = getLaneY(n.lane);
     ctx.fillStyle = n.lane === 0 ? '#58a6ff' : '#3fb950';
     ctx.fillRect(n.x - NOTE_W / 2, y - NOTE_H / 2, NOTE_W, NOTE_H);
@@ -457,9 +384,7 @@ function showOverlay(title, desc, btnText) {
   overlayBtn.textContent = btnText;
   overlay.classList.remove('hidden');
 }
-function hideOverlay() {
-  overlay.classList.add('hidden');
-}
+function hideOverlay() { overlay.classList.add('hidden'); }
 
 window.addEventListener('keydown', (e) => {
   if (e.repeat) return;
@@ -479,17 +404,13 @@ window.addEventListener('blur', () => {
 window.addEventListener('resize', () => {});
 
 overlayBtn.addEventListener('click', () => {
-  if (round.paused) togglePause();
-  else startGame();
+  if (round.paused) togglePause(); else startGame();
 });
 btnPause.addEventListener('click', togglePause);
 btnRestart.addEventListener('click', startGame);
 btnMute.addEventListener('click', toggleMute);
 
-updateMuteButton();
-updateUI();
-render();
-requestAnimationFrame(loop);
+updateMuteButton(); updateUI(); render(); requestAnimationFrame(loop);
 </script>
 </body>
 </html>
