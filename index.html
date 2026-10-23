@@ -130,8 +130,8 @@
 <div class="panel">
   <h1>Rhythm Dodge</h1>
   <div class="sub">2-Lane Rhythm Game · 30초 생존</div>
-  <div class="rule">규칙: 두 레인에 도형이 판정선에 닿는 순간 해당 키를 누르세요. 정확히 누르면 성공, 놓치거나 너무 일찍 누르면 실패. <b>실패 3회 = 게임 오버</b>, 30초 생존 시 성공.</div>
-  <div class="rule keys">조작: <b>D</b> = 왼쪽 레인 · <b>K</b> = 오른쪽 레인 · <b>P</b> = 일시정지 · <b>R</b> = 재시작 · <b>M</b> = 음소거</div>
+  <div class="rule">규칙: 오른쪽에서 왼쪽으로 오는 도형이 판정선에 닿는 순간 해당 레인의 키를 누르세요. 정확히 누르면 성공, 놓치거나 너무 일찍 누르면 실패. <b>실패 3회 = 게임 오버</b>, 30초 생존 시 성공.</div>
+  <div class="rule keys">조작: <b>D</b> = 위쪽 레인 · <b>K</b> = 아래쪽 레인 · <b>P</b> = 일시정지 · <b>R</b> = 재시작 · <b>M</b> = 음소거</div>
   <div class="rule sub">효과: 게임 오버 시에만 소리 발생 (M으로 즉시 음소거)</div>
 </div>
 
@@ -150,7 +150,7 @@
   <canvas id="game" width="480" height="640"></canvas>
   <div id="overlay" class="overlay">
     <h2 id="overlay-title">Rhythm Dodge</h2>
-    <p id="overlay-desc">시작하려면 아래 버튼을 누르세요.<br />D = 왼쪽 / K = 오른쪽 / P = 일시정지 / R = 재시작 / M = 음소거</p>
+    <p id="overlay-desc">시작하려면 아래 버튼을 누르세요.<br />D = 위쪽 / K = 아래쪽 / P = 일시정지 / R = 재시작 / M = 음소거</p>
     <button id="overlay-btn">시작</button>
   </div>
 </div>
@@ -169,7 +169,7 @@
    고정 상수 (C20: 난이도 비교 시 이 외 값은 절대 변경하지 않음)
    ============================================================ */
 const LANES = 2;
-const LANE_KEYS = { left: 'KeyD', right: 'KeyK' };  // 2레인 × 1키 고정
+const LANE_KEYS = { top: 'KeyD', bottom: 'KeyK' };  // 2레인 × 1키 고정
 const JUDGE_TOLERANCE = 40;       // 판정선 안 (px)
 const NEAR_RANGE = 200;           // "근처" 판정 범위 (px)
 const SPAWN_INTERVAL = 700;       // 노트 생성 간격 (ms) 고정
@@ -177,6 +177,11 @@ const ROUND_SECONDS = 30;         // 한 판 길이 (초) 고정
 const FAIL_LIMIT = 3;             // 실패 3회 = 게임 오버
 const SAVE_KEY = 'rhythm-dodge-save-v1';
 const DEFAULT_SAVE = { bestScore: 0, muted: false };
+
+const JUDGE_LINE_X = 80;          // 판정선 x (왼쪽 가장자리)
+const NOTE_START_X = 540;         // 노트 시작 x (오른쪽 밖)
+const NOTE_W = 56;                // 노트 가로 길이
+const NOTE_H = 24;                // 노트 세로 길이
 
 /* ============================================================
    난이도 변수 (C18~C21: 이 값 하나만 10회→10회 비교 대상)
@@ -269,16 +274,19 @@ function playGameOverSound() {
 }
 
 /* ============================================================
-   게임 로직
+   레인 y 위치 (2레인: 위/아래)
    ============================================================ */
-function getJudgeLineY() {
-  return canvas.height * 0.85;
+function getLaneY(lane) {
+  // lane 0 = top, lane 1 = bottom
+  return lane === 0 ? canvas.height * 0.35 : canvas.height * 0.65;
 }
-function getLaneX(laneIndex) {
-  const laneW = canvas.width / LANES;
-  return laneW * laneIndex + laneW / 2;
+function getJudgeLineX() {
+  return JUDGE_LINE_X;
 }
 
+/* ============================================================
+   게임 로직
+   ============================================================ */
 function resetRound() {
   round.running = true;
   round.paused = false;
@@ -301,7 +309,7 @@ function startGame() {
 function endGame(isSuccess) {
   round.running = false;
   round.gameOver = true;
-  round.notes = [];                    // ← 게임 종료 시 노트 제거
+  round.notes = [];
   if (round.success > saved.bestScore) {
     saved.bestScore = round.success;
     saveSave(saved);
@@ -346,26 +354,25 @@ function updateMuteButton() {
 function findNearestNote(lane) {
   let best = null;
   let bestDist = Infinity;
-  const judgeY = getJudgeLineY();
+  const judgeX = getJudgeLineX();
   for (const n of round.notes) {
     if (n.lane !== lane || n.hit) continue;
-    const d = Math.abs(n.y - judgeY);
+    const d = Math.abs(n.x - judgeX);
     if (d < bestDist) { bestDist = d; best = n; }
   }
   return best;
 }
 
 function judge(lane) {
-  // 이중 방어: 게임 진행 중이 아니면 판정 자체를 하지 않음
   if (!round.running || round.paused || round.gameOver) return;
 
-  const judgeY = getJudgeLineY();
+  const judgeX = getJudgeLineX();
   const near = findNearestNote(lane);
   console.log(`[INPUT] lane=${lane} near=${near ? 'Y' : 'N'}`);
 
   if (!near) return;
 
-  const dist = Math.abs(near.y - judgeY);
+  const dist = Math.abs(near.x - judgeX);
   if (dist > NEAR_RANGE) return;
 
   if (dist <= JUDGE_TOLERANCE) {
@@ -404,25 +411,28 @@ function loop(now) {
     return;
   }
 
+  // 노트 생성: 오른쪽 밖에서, 위/아래 레인 랜덤
   round.spawnAcc += dt * 1000;
   while (round.spawnAcc >= SPAWN_INTERVAL) {
     round.spawnAcc -= SPAWN_INTERVAL;
     const lane = Math.random() < 0.5 ? 0 : 1;
     round.notes.push({
       lane,
-      y: -20,
+      x: NOTE_START_X,
       hit: false,
     });
   }
 
-  const judgeY = getJudgeLineY();
+  // 노트 이동: 오른쪽 → 왼쪽
   for (const n of round.notes) {
-    n.y += NOTE_SPEED * dt;
+    n.x -= NOTE_SPEED * dt;
   }
 
+  // 판정선을 지나친 노트 = miss
+  const judgeX = getJudgeLineX();
   for (const n of round.notes) {
     if (n.hit) continue;
-    if (n.y > judgeY + JUDGE_TOLERANCE) {
+    if (n.x < judgeX - JUDGE_TOLERANCE) {
       n.hit = true;
       round.fail += 1;
       console.log(`[MISS-AUTO] lane=${n.lane} fail=${round.fail}`);
@@ -430,7 +440,8 @@ function loop(now) {
     }
   }
 
-  round.notes = round.notes.filter(n => n.y < canvas.height + 100);
+  // 화면 밖(왼쪽) 노트 제거 (C16: 메모리 누수 방지)
+  round.notes = round.notes.filter(n => n.x > -100);
 
   updateUI();
   render();
@@ -442,37 +453,46 @@ function loop(now) {
 function render() {
   const W = canvas.width;
   const H = canvas.height;
-  const laneW = W / LANES;
-  const judgeY = getJudgeLineY();
+  const judgeX = getJudgeLineX();
 
   ctx.clearRect(0, 0, W, H);
   ctx.fillStyle = '#0d1117';
   ctx.fillRect(0, 0, W, H);
 
+  // 레인 구분선 (가로선, 위/아래 경계)
   ctx.strokeStyle = '#21262d';
   ctx.lineWidth = 1;
-  for (let i = 1; i < LANES; i++) {
-    ctx.beginPath();
-    ctx.moveTo(laneW * i, 0);
-    ctx.lineTo(laneW * i, H);
-    ctx.stroke();
-  }
-
-  ctx.strokeStyle = '#f0c674';
-  ctx.lineWidth = 2;
   ctx.beginPath();
-  ctx.moveTo(0, judgeY);
-  ctx.lineTo(W, judgeY);
+  ctx.moveTo(0, H * 0.5);
+  ctx.lineTo(W, H * 0.5);
   ctx.stroke();
 
-  ctx.fillStyle = 'rgba(240, 198, 116, 0.08)';
-  ctx.fillRect(0, judgeY - JUDGE_TOLERANCE, W, JUDGE_TOLERANCE * 2);
+  // 판정선 (세로선, 왼쪽)
+  ctx.strokeStyle = '#f0c674';
+  ctx.lineWidth = 3;
+  ctx.beginPath();
+  ctx.moveTo(judgeX, 0);
+  ctx.lineTo(judgeX, H);
+  ctx.stroke();
 
+  // 판정선 ±tolerance 영역
+  ctx.fillStyle = 'rgba(240, 198, 116, 0.10)';
+  ctx.fillRect(judgeX - JUDGE_TOLERANCE, 0, JUDGE_TOLERANCE * 2, H);
+
+  // 레인 라벨
+  ctx.fillStyle = '#8b949e';
+  ctx.font = 'bold 14px system-ui, sans-serif';
+  ctx.textAlign = 'left';
+  ctx.textBaseline = 'middle';
+  ctx.fillText('D (위)', 8, H * 0.15);
+  ctx.fillText('K (아래)', 8, H * 0.85);
+
+  // 노트 (오른쪽→왼쪽, 가로 막대)
   for (const n of round.notes) {
     if (n.hit) continue;
-    const x = getLaneX(n.lane);
+    const y = getLaneY(n.lane);
     ctx.fillStyle = n.lane === 0 ? '#58a6ff' : '#3fb950';
-    ctx.fillRect(x - 24, n.y - 12, 48, 24);
+    ctx.fillRect(n.x - NOTE_W / 2, y - NOTE_H / 2, NOTE_W, NOTE_H);
   }
 }
 
@@ -497,14 +517,14 @@ function hideOverlay() {
 }
 
 /* ============================================================
-   이벤트 등록 (C06/C12: 앱 초기화 시 1회만 등록, repeat 무시)
+   이벤트 등록 (C06/C12: 1회 등록, repeat 무시)
    ============================================================ */
 window.addEventListener('keydown', (e) => {
   if (e.repeat) return;
 
   if (round.running && !round.paused && !round.gameOver) {
-    if (e.code === LANE_KEYS.left)  { judge(0); return; }
-    if (e.code === LANE_KEYS.right) { judge(1); return; }
+    if (e.code === LANE_KEYS.top)    { judge(0); return; }
+    if (e.code === LANE_KEYS.bottom) { judge(1); return; }
   }
   if (e.code === 'KeyP') { togglePause(); return; }
   if (e.code === 'KeyR') { startGame(); return; }
