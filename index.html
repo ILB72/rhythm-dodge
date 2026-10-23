@@ -215,8 +215,10 @@ const NOTE_W = 64;
 const NOTE_H = 24;                 
 const LANE_TOP_Y = 0.35;           
 const LANE_BOTTOM_Y = 0.65;        
-const FOOTER_START_Y = 0.82;       // 하단 패널 시작
-const JUDGE_LINE_START_Y = 0.08;   // ★ 판정선 상단 시작점 (위아래 대칭을 위해 추가)
+
+/* ★ 판정선/패널 대칭을 위한 설정 */
+const FOOTER_START_Y = 0.82;       // 하단 패널 시작 높이 (82%)
+const JUDGE_LINE_START_Y = 0.08;   // 판정선 상단 시작 높이 (위아래 대칭을 위해 8%로 설정)
 
 const SPEED_MIN = 100;
 const SPEED_MAX = 300;
@@ -465,11 +467,9 @@ function render() {
   // ==========================================
   // 3. 판정선 배경 띠 및 메인 라인 (위아래 대칭 적용)
   // ==========================================
-  // 배경 띠 (judgeTopY부터 footerY까지만)
   ctx.fillStyle = 'rgba(240, 198, 116, 0.10)';
   ctx.fillRect(judgeX - JUDGE_TOLERANCE, judgeTopY, JUDGE_TOLERANCE * 2, footerY - judgeTopY);
 
-  // 메인 라인
   ctx.strokeStyle = '#f0c674'; 
   ctx.lineWidth = 3;
   ctx.beginPath(); 
@@ -519,19 +519,24 @@ function render() {
   drawKeycap(ctx, W / 2 + 78, centerY - 16, 32, 32, ']');
   ctx.restore();
 
-  // 6. 캔버스 내 실패 카운트 UI
+  // ==========================================
+  // 6. 캔버스 내 실패 카운트 UI (왼쪽 위로 이동)
+  // ==========================================
   const failColor = round.fail === 0 ? '#3fb950' : round.fail === 1 ? '#e3b341' : '#f85149';
   ctx.save();
   ctx.font = 'bold 22px system-ui, sans-serif';
-  ctx.textAlign = 'right';
+  ctx.textAlign = 'left'; // 왼쪽 정렬로 변경
   ctx.textBaseline = 'top';
   ctx.fillStyle = failColor;
-  ctx.fillText(`실패: ${round.fail} / ${FAIL_LIMIT}`, W - 20, 20);
+  // 위치를 왼쪽 위(20, 20)로 변경
+  ctx.fillText(`실패: ${round.fail} / ${FAIL_LIMIT}`, 20, 20);
   
+  // 목숨 원형들도 왼쪽 위 텍스트 아래로 이동
   for (let i = 0; i < FAIL_LIMIT; i++) {
     const isLost = i < round.fail;
     ctx.beginPath();
-    ctx.arc(W - 30 - (i * 24), 56, 8, 0, Math.PI * 2);
+    // X 좌표를 30부터 시작해서 오른쪽으로 24px씩 간격 두기
+    ctx.arc(30 + (i * 24), 56, 8, 0, Math.PI * 2);
     if (isLost) { ctx.strokeStyle = failColor; ctx.lineWidth = 2; ctx.stroke(); }
     else { ctx.fillStyle = failColor; ctx.fill(); }
   }
