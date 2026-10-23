@@ -5,7 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Rhythm Dodge — 2-Lane Rhythm Game</title>
 <style>
-  /* ===== C10/C11: 두 해상도에서 잘림·가로 넘침 0 ===== */
   * { box-sizing: border-box; }
   html, body { margin: 0; padding: 0; }
   body {
@@ -19,8 +18,6 @@
     overflow-x: hidden;
     padding: 12px;
   }
-
-  /* ===== C03/C04/C05: 규칙·조작·상태 공개 표시 ===== */
   .panel {
     width: 100%;
     max-width: 480px;
@@ -32,11 +29,7 @@
     font-size: 13px;
     line-height: 1.5;
   }
-  .panel h1 {
-    font-size: 16px;
-    margin: 0 0 4px 0;
-    color: #58a6ff;
-  }
+  .panel h1 { font-size: 16px; margin: 0 0 4px 0; color: #58a6ff; }
   .panel .sub { color: #8b949e; font-size: 12px; }
   .panel .rule { margin: 4px 0; }
   .panel .keys { color: #f0c674; }
@@ -49,8 +42,6 @@
     flex-wrap: wrap;
   }
   .status span { color: #79c0ff; font-weight: 600; }
-
-  /* ===== 캔버스: 세로형 3:4, 반응형 ===== */
   .stage {
     position: relative;
     width: 100%;
@@ -65,8 +56,6 @@
     border-radius: 8px;
     touch-action: none;
   }
-
-  /* ===== 오버레이 ===== */
   .overlay {
     position: absolute;
     inset: 0;
@@ -94,8 +83,6 @@
     cursor: pointer;
   }
   .overlay button:hover { background: #2ea043; }
-
-  /* ===== 하단 컨트롤 ===== */
   .controls {
     width: 100%;
     max-width: 480px;
@@ -117,8 +104,6 @@
   }
   .controls button:hover { background: #30363d; }
   .controls button.active { background: #1f6feb; border-color: #1f6feb; }
-
-  /* ===== C27: 움직임 감소 옵션 ===== */
   @media (prefers-reduced-motion: reduce) {
     * { animation: none !important; transition: none !important; }
   }
@@ -126,7 +111,6 @@
 </head>
 <body>
 
-<!-- ===== C03/C04: 규칙·조작 공개 표시 ===== -->
 <div class="panel">
   <h1>Rhythm Dodge</h1>
   <div class="sub">2-Lane Rhythm Game · 30초 생존</div>
@@ -135,7 +119,6 @@
   <div class="rule sub">효과: 게임 오버 시에만 소리 발생 (M으로 즉시 음소거)</div>
 </div>
 
-<!-- ===== C05: 현재 게임 상태 공개 표시 ===== -->
 <div class="panel">
   <div class="status">
     <div>남은 시간: <span id="ui-time">30.0</span>s</div>
@@ -145,7 +128,6 @@
   </div>
 </div>
 
-<!-- ===== 게임 캔버스 ===== -->
 <div class="stage">
   <canvas id="game" width="480" height="640"></canvas>
   <div id="overlay" class="overlay">
@@ -155,7 +137,6 @@
   </div>
 </div>
 
-<!-- ===== 하단 컨트롤 ===== -->
 <div class="controls">
   <button id="btn-pause">일시정지 (P)</button>
   <button id="btn-restart">재시작 (R)</button>
@@ -166,35 +147,35 @@
 'use strict';
 
 /* ============================================================
-   고정 상수 (C20: 난이도 비교 시 이 외 값은 절대 변경하지 않음)
+   고정 상수
    ============================================================ */
 const LANES = 2;
-const LANE_KEYS = { top: 'KeyD', bottom: 'KeyK' };  // 2레인 × 1키 고정
-const JUDGE_TOLERANCE = 40;       // 판정선 안 (px)
-const NEAR_RANGE = 200;           // "근처" 판정 범위 (px)
-const SPAWN_INTERVAL = 700;       // 노트 생성 간격 (ms) 고정
-const ROUND_SECONDS = 30;         // 한 판 길이 (초) 고정
-const FAIL_LIMIT = 3;             // 실패 3회 = 게임 오버
+const LANE_KEYS = { top: 'KeyD', bottom: 'KeyK' };
+const JUDGE_TOLERANCE = 40;
+const NEAR_RANGE = 200;
+const SPAWN_INTERVAL = 700;
+const ROUND_SECONDS = 30;
+const FAIL_LIMIT = 3;
 const SAVE_KEY = 'rhythm-dodge-save-v1';
 const DEFAULT_SAVE = { bestScore: 0, muted: false };
 
-const JUDGE_LINE_X = 80;          // 판정선 x (왼쪽 가장자리)
-const NOTE_START_X = 540;         // 노트 시작 x (오른쪽 밖)
-const NOTE_W = 56;                // 노트 가로 길이
-const NOTE_H = 24;                // 노트 세로 길이
+/* ===== 레이아웃 상수 ===== */
+const JUDGE_LINE_X = 100;
+const NOTE_START_X = 520;
+const NOTE_W = 80;
+const NOTE_H = 32;
+const LANE_TOP_Y = 0.30;
+const LANE_BOTTOM_Y = 0.70;
 
 /* ============================================================
-   난이도 변수 (C18~C21: 이 값 하나만 10회→10회 비교 대상)
+   난이도 변수
    ============================================================ */
-let NOTE_SPEED = 180;             // px/sec — 이 값만 변경
+let NOTE_SPEED = 180;
 
-/* ============================================================
-   보존 기록 (C23: localStorage, 손상/빈값 복구)
-   ============================================================ */
 function loadSave() {
   try {
     const raw = localStorage.getItem(SAVE_KEY);
-    if (!raw) return { ...DEFAULT_SAVE };                 // C24: 빈 값 → 기본값
+    if (!raw) return { ...DEFAULT_SAVE };
     const parsed = JSON.parse(raw);
     if (
       typeof parsed !== 'object' || parsed === null ||
@@ -205,18 +186,15 @@ function loadSave() {
     }
     return { bestScore: parsed.bestScore, muted: parsed.muted };
   } catch {
-    return { ...DEFAULT_SAVE };                            // C25: 손상 → 기본값
+    return { ...DEFAULT_SAVE };
   }
 }
 function saveSave(data) {
-  try { localStorage.setItem(SAVE_KEY, JSON.stringify(data)); } catch { /* 무시 */ }
+  try { localStorage.setItem(SAVE_KEY, JSON.stringify(data)); } catch {}
 }
 
 let saved = loadSave();
 
-/* ============================================================
-   현재 판 상태 (C22: 새 게임 시 전부 초기화 대상)
-   ============================================================ */
 const round = {
   running: false,
   paused: false,
@@ -229,9 +207,6 @@ const round = {
   lastTime: 0,
 };
 
-/* ============================================================
-   DOM
-   ============================================================ */
 const canvas = document.getElementById('game');
 const ctx = canvas.getContext('2d');
 const uiTime = document.getElementById('ui-time');
@@ -246,9 +221,6 @@ const btnPause = document.getElementById('btn-pause');
 const btnRestart = document.getElementById('btn-restart');
 const btnMute = document.getElementById('btn-mute');
 
-/* ============================================================
-   오디오 (C26: 게임 오버 시에만 소리 / C27: M 토글)
-   ============================================================ */
 let audioCtx = null;
 function ensureAudio() {
   if (!audioCtx) {
@@ -273,20 +245,13 @@ function playGameOverSound() {
   osc.stop(now + 0.5);
 }
 
-/* ============================================================
-   레인 y 위치 (2레인: 위/아래)
-   ============================================================ */
 function getLaneY(lane) {
-  // lane 0 = top, lane 1 = bottom
-  return lane === 0 ? canvas.height * 0.35 : canvas.height * 0.65;
+  return lane === 0 ? canvas.height * LANE_TOP_Y : canvas.height * LANE_BOTTOM_Y;
 }
 function getJudgeLineX() {
   return JUDGE_LINE_X;
 }
 
-/* ============================================================
-   게임 로직
-   ============================================================ */
 function resetRound() {
   round.running = true;
   round.paused = false;
@@ -328,9 +293,7 @@ function endGame(isSuccess) {
 function togglePause() {
   if (!round.running || round.gameOver) return;
   round.paused = !round.paused;
-  if (!round.paused) {
-    round.lastTime = performance.now();
-  }
+  if (!round.paused) round.lastTime = performance.now();
   btnPause.classList.toggle('active', round.paused);
   btnPause.textContent = round.paused ? '재개 (P)' : '일시정지 (P)';
   if (round.paused) showOverlay('일시정지', 'P 또는 아래 버튼으로 재개', '재개');
@@ -348,9 +311,6 @@ function updateMuteButton() {
   btnMute.classList.toggle('active', saved.muted);
 }
 
-/* ============================================================
-   입력 처리 (C06/C12: 1조작 = 1상태변화, repeat 무시)
-   ============================================================ */
 function findNearestNote(lane) {
   let best = null;
   let bestDist = Infinity;
@@ -365,13 +325,11 @@ function findNearestNote(lane) {
 
 function judge(lane) {
   if (!round.running || round.paused || round.gameOver) return;
-
   const judgeX = getJudgeLineX();
   const near = findNearestNote(lane);
   console.log(`[INPUT] lane=${lane} near=${near ? 'Y' : 'N'}`);
 
   if (!near) return;
-
   const dist = Math.abs(near.x - judgeX);
   if (dist > NEAR_RANGE) return;
 
@@ -388,9 +346,6 @@ function judge(lane) {
   updateUI();
 }
 
-/* ============================================================
-   메인 루프 (C15: performance.now() 기반 delta)
-   ============================================================ */
 function loop(now) {
   requestAnimationFrame(loop);
 
@@ -411,7 +366,6 @@ function loop(now) {
     return;
   }
 
-  // 노트 생성: 오른쪽 밖에서, 위/아래 레인 랜덤
   round.spawnAcc += dt * 1000;
   while (round.spawnAcc >= SPAWN_INTERVAL) {
     round.spawnAcc -= SPAWN_INTERVAL;
@@ -423,12 +377,10 @@ function loop(now) {
     });
   }
 
-  // 노트 이동: 오른쪽 → 왼쪽
   for (const n of round.notes) {
     n.x -= NOTE_SPEED * dt;
   }
 
-  // 판정선을 지나친 노트 = miss
   const judgeX = getJudgeLineX();
   for (const n of round.notes) {
     if (n.hit) continue;
@@ -440,16 +392,12 @@ function loop(now) {
     }
   }
 
-  // 화면 밖(왼쪽) 노트 제거 (C16: 메모리 누수 방지)
   round.notes = round.notes.filter(n => n.x > -100);
 
   updateUI();
   render();
 }
 
-/* ============================================================
-   렌더링
-   ============================================================ */
 function render() {
   const W = canvas.width;
   const H = canvas.height;
@@ -459,7 +407,7 @@ function render() {
   ctx.fillStyle = '#0d1117';
   ctx.fillRect(0, 0, W, H);
 
-  // 레인 구분선 (가로선, 위/아래 경계)
+  // 레인 구분선 (가로, 중앙)
   ctx.strokeStyle = '#21262d';
   ctx.lineWidth = 1;
   ctx.beginPath();
@@ -467,7 +415,11 @@ function render() {
   ctx.lineTo(W, H * 0.5);
   ctx.stroke();
 
-  // 판정선 (세로선, 왼쪽)
+  // 판정선 ±tolerance 영역
+  ctx.fillStyle = 'rgba(240, 198, 116, 0.10)';
+  ctx.fillRect(judgeX - JUDGE_TOLERANCE, 0, JUDGE_TOLERANCE * 2, H);
+
+  // 판정선 (세로)
   ctx.strokeStyle = '#f0c674';
   ctx.lineWidth = 3;
   ctx.beginPath();
@@ -475,30 +427,23 @@ function render() {
   ctx.lineTo(judgeX, H);
   ctx.stroke();
 
-  // 판정선 ±tolerance 영역
-  ctx.fillStyle = 'rgba(240, 198, 116, 0.10)';
-  ctx.fillRect(judgeX - JUDGE_TOLERANCE, 0, JUDGE_TOLERANCE * 2, H);
-
   // 레인 라벨
   ctx.fillStyle = '#8b949e';
   ctx.font = 'bold 14px system-ui, sans-serif';
   ctx.textAlign = 'left';
   ctx.textBaseline = 'middle';
-  ctx.fillText('D (위)', 8, H * 0.15);
-  ctx.fillText('K (아래)', 8, H * 0.85);
+  ctx.fillText('D (위)', 8, H * 0.12);
+  ctx.fillText('K (아래)', 8, H * 0.88);
 
-  // 노트 (오른쪽→왼쪽, 가로 막대)
+  // 노트 (판정 완료된 노트는 그리지 않음)
   for (const n of round.notes) {
-    if (n.hit) continue;
+    if (n.hit) continue;  // ← 판정 완료된 노트는 건너뜀 (화면에서 사라짐)
     const y = getLaneY(n.lane);
     ctx.fillStyle = n.lane === 0 ? '#58a6ff' : '#3fb950';
     ctx.fillRect(n.x - NOTE_W / 2, y - NOTE_H / 2, NOTE_W, NOTE_H);
   }
 }
 
-/* ============================================================
-   UI 업데이트
-   ============================================================ */
 function updateUI() {
   uiTime.textContent = round.timeLeft.toFixed(1);
   uiSuccess.textContent = round.success;
@@ -516,12 +461,8 @@ function hideOverlay() {
   overlay.classList.add('hidden');
 }
 
-/* ============================================================
-   이벤트 등록 (C06/C12: 1회 등록, repeat 무시)
-   ============================================================ */
 window.addEventListener('keydown', (e) => {
   if (e.repeat) return;
-
   if (round.running && !round.paused && !round.gameOver) {
     if (e.code === LANE_KEYS.top)    { judge(0); return; }
     if (e.code === LANE_KEYS.bottom) { judge(1); return; }
@@ -535,7 +476,7 @@ window.addEventListener('blur', () => {
   if (round.running && !round.paused && !round.gameOver) togglePause();
 });
 
-window.addEventListener('resize', () => { /* 상태 유지 */ });
+window.addEventListener('resize', () => {});
 
 overlayBtn.addEventListener('click', () => {
   if (round.paused) togglePause();
@@ -545,9 +486,6 @@ btnPause.addEventListener('click', togglePause);
 btnRestart.addEventListener('click', startGame);
 btnMute.addEventListener('click', toggleMute);
 
-/* ============================================================
-   초기화
-   ============================================================ */
 updateMuteButton();
 updateUI();
 render();
