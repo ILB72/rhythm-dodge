@@ -156,11 +156,13 @@ const FAIL_LIMIT = 3;
 const SAVE_KEY = 'rhythm-dodge-save-v1';
 const DEFAULT_SAVE = { bestScore: 0, muted: false };
 
-/* ===== 레이아웃 상수 ===== */
-const JUDGE_LINE_X = 120;          
-const NOTE_START_X = 450;          
+/* ===== 레이아웃 상수 (뮤즈대시/태고 스타일로 재배치) ===== */
+const JUDGE_LINE_X = 140;          // 판정선: 조금 더 안쪽으로 (가이드 텍스트 공간 확보)
+const NOTE_START_X = 500;          // 노트 시작: 화면 오른쪽 밖에서
 const NOTE_W = 64;                 
 const NOTE_H = 24;                 
+const LANE_TOP_Y = 0.35;           // 위쪽 레인 위치 (25% -> 35%로 모음)
+const LANE_BOTTOM_Y = 0.65;        // 아래쪽 레인 위치 (75% -> 65%로 모음)
 
 let NOTE_SPEED = 180;
 
@@ -232,7 +234,7 @@ function playGameOverSound() {
 }
 
 function getLaneY(lane) {
-  return lane === 0 ? canvas.height * 0.25 : canvas.height * 0.75; 
+  return lane === 0 ? canvas.height * LANE_TOP_Y : canvas.height * LANE_BOTTOM_Y; 
 }
 function getJudgeLineX() {
   return JUDGE_LINE_X;
@@ -387,19 +389,21 @@ function render() {
   ctx.lineWidth = 3;
   ctx.beginPath(); ctx.moveTo(judgeX, 0); ctx.lineTo(judgeX, H); ctx.stroke();
 
-  // 5. D / K 안내 텍스트
+  // ==========================================
+  // ★ 5. D / K 안내 텍스트 (레인 중심선에 정확히 맞춤)
+  // ==========================================
   ctx.fillStyle = '#8b949e'; 
   ctx.font = 'bold 16px system-ui, sans-serif';
   ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
-  ctx.fillText('D (위)', judgeX + 16, H * 0.25);
-  ctx.fillText('K (아래)', judgeX + 16, H * 0.75);
+  ctx.fillText('D (위)', judgeX + 16, H * LANE_TOP_Y);
+  ctx.fillText('K (아래)', judgeX + 16, H * LANE_BOTTOM_Y);
 
   // ==========================================
-  // ★ 6. 캔버스 내 실패 카운트 UI (우측 상단)
+  // 6. 캔버스 내 실패 카운트 UI (우측 상단)
   // ==========================================
   const failColor = round.fail === 0 ? '#3fb950' 
                   : round.fail === 1 ? '#e3b341' 
-                  : '#f85149'; // 0회: 초록, 1회: 노랑, 2회 이상: 빨강
+                  : '#f85149';
                   
   ctx.save();
   ctx.font = 'bold 22px system-ui, sans-serif';
