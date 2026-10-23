@@ -156,13 +156,11 @@ const FAIL_LIMIT = 3;
 const SAVE_KEY = 'rhythm-dodge-save-v1';
 const DEFAULT_SAVE = { bestScore: 0, muted: false };
 
-/* ===== 레이아웃 상수 (수정됨) ===== */
-const JUDGE_LINE_X = 120;          // 판정선 조금 더 안쪽으로
-const NOTE_START_X = 450;          // 화면 오른쪽 안쪽에서 생성
-const NOTE_W = 100;                // 노트 가로 100
-const NOTE_H = 40;                 // 노트 세로 40
-const LANE_TOP_Y = 0.30;
-const LANE_BOTTOM_Y = 0.70;
+/* ===== 레이아웃 상수 ===== */
+const JUDGE_LINE_X = 120;          
+const NOTE_START_X = 450;          
+const NOTE_W = 64;                 // 노트 가로 크기 (슬림하게 조정)
+const NOTE_H = 24;                 // 노트 세로 크기 (슬림하게 조정)
 
 let NOTE_SPEED = 180;
 
@@ -230,8 +228,9 @@ function playGameOverSound() {
   osc.stop(now + 0.5);
 }
 
+// 화면 정확히 반으로 나눈 각 구역의 중앙
 function getLaneY(lane) {
-  return lane === 0 ? canvas.height * LANE_TOP_Y : canvas.height * LANE_BOTTOM_Y;
+  return lane === 0 ? canvas.height * 0.25 : canvas.height * 0.75; 
 }
 function getJudgeLineX() {
   return JUDGE_LINE_X;
@@ -344,28 +343,63 @@ function loop(now) {
 function render() {
   const W = canvas.width, H = canvas.height;
   const judgeX = getJudgeLineX();
+  const midY = H * 0.5;
 
   ctx.clearRect(0, 0, W, H);
   ctx.fillStyle = '#0d1117';
   ctx.fillRect(0, 0, W, H);
 
-  ctx.strokeStyle = '#21262d'; ctx.lineWidth = 1;
-  ctx.beginPath(); ctx.moveTo(0, H * 0.5); ctx.lineTo(W, H * 0.5); ctx.stroke();
+  // ==========================================
+  // 1. 레인 배경 구분 (위/아래 영역 살짝 다르게)
+  // ==========================================
+  // 아래쪽 레인 배경 살짝 밝게
+  ctx.fillStyle = '#11161d'; 
+  ctx.fillRect(0, midY, W, midY);
 
+  // ==========================================
+  // 2. 화면 정중앙 가로 분할선 (위/아래 레인 경계)
+  // ==========================================
+  ctx.strokeStyle = '#30363d';
+  ctx.lineWidth = 2;
+  ctx.beginPath(); 
+  ctx.moveTo(0, midY); 
+  ctx.lineTo(W, midY); 
+  ctx.stroke();
+
+  // ==========================================
+  // 3. 판정선 (세로)
+  // ==========================================
+  // 판정선 영역 (노란색 반투명 띠)
   ctx.fillStyle = 'rgba(240, 198, 116, 0.10)';
   ctx.fillRect(judgeX - JUDGE_TOLERANCE, 0, JUDGE_TOLERANCE * 2, H);
 
-  ctx.strokeStyle = '#f0c674'; ctx.lineWidth = 3;
-  ctx.beginPath(); ctx.moveTo(judgeX, 0); ctx.lineTo(judgeX, H); ctx.stroke();
+  // 판정선 메인 라인
+  ctx.strokeStyle = '#f0c674'; 
+  ctx.lineWidth = 3;
+  ctx.beginPath(); 
+  ctx.moveTo(judgeX, 0); 
+  ctx.lineTo(judgeX, H); 
+  ctx.stroke();
 
-  ctx.fillStyle = '#8b949e'; ctx.font = 'bold 14px system-ui, sans-serif';
-  ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
-  ctx.fillText('D (위)', 8, H * 0.12);
-  ctx.fillText('K (아래)', 8, H * 0.88);
+  // ==========================================
+  // 4. D / K 레인 안내 텍스트 (판정선 오른쪽, 레인 정중앙)
+  // ==========================================
+  ctx.fillStyle = '#8b949e'; 
+  ctx.font = 'bold 16px system-ui, sans-serif';
+  ctx.textAlign = 'left'; 
+  ctx.textBaseline = 'middle';
+  
+  // 위쪽 레인 (D)
+  ctx.fillText('D (위)', judgeX + 16, H * 0.25);
+  // 아래쪽 레인 (K)
+  ctx.fillText('K (아래)', judgeX + 16, H * 0.75);
 
+  // ==========================================
+  // 5. 노트 그리기
+  // ==========================================
   for (const n of round.notes) {
     if (n.hit) continue;
-    const y = getLaneY(n.lane);
+    const y = getLaneY(n.lane); // 각 레인의 중앙 Y축
     ctx.fillStyle = n.lane === 0 ? '#58a6ff' : '#3fb950';
     ctx.fillRect(n.x - NOTE_W / 2, y - NOTE_H / 2, NOTE_W, NOTE_H);
   }
