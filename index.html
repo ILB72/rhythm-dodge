@@ -42,6 +42,46 @@
     flex-wrap: wrap;
   }
   .status span { color: #79c0ff; font-weight: 600; }
+  
+  /* ===== 속도 조절 버튼 UI ===== */
+  .speed-control {
+    width: 100%;
+    max-width: 480px;
+    background: #161b22;
+    border: 1px solid #30363d;
+    border-radius: 8px;
+    padding: 10px 14px;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    font-size: 13px;
+  }
+  .speed-btn {
+    background: #21262d;
+    color: #e6edf3;
+    border: 1px solid #30363d;
+    border-radius: 6px;
+    width: 40px;
+    height: 32px;
+    font-size: 18px;
+    font-weight: bold;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .speed-btn:hover { background: #30363d; }
+  .speed-display {
+    color: #f0c674;
+    font-weight: 600;
+    font-size: 15px;
+    min-width: 80px;
+    text-align: center;
+  }
+  .speed-display span { color: #79c0ff; }
+
   .stage {
     position: relative;
     width: 100%;
@@ -71,7 +111,7 @@
   }
   .overlay.hidden { display: none; }
   .overlay h2 { margin: 0; font-size: 20px; }
-  .overlay p { margin: 0; color: #8b949e; font-size: 13px; }
+  .overlay p { margin: 0; color: #8b949e; font-size: 13px; line-height: 1.6; }
   .overlay button {
     background: #238636;
     color: #fff;
@@ -111,11 +151,12 @@
 </head>
 <body>
 
+<!-- ===== 안내 패널 (단축키 안내 추가) ===== -->
 <div class="panel">
   <h1>Rhythm Dodge</h1>
   <div class="sub">2-Lane Rhythm Game · 30초 생존</div>
   <div class="rule">규칙: 오른쪽에서 왼쪽으로 오는 도형이 판정선에 닿는 순간 해당 레인의 키를 누르세요. 정확히 누르면 성공, 놓치거나 너무 일찍 누르면 실패. <b>실패 3회 = 게임 오버</b>, 30초 생존 시 성공.</div>
-  <div class="rule keys">조작: <b>D</b> = 위쪽 레인 · <b>K</b> = 아래쪽 레인 · <b>P</b> = 일시정지 · <b>R</b> = 재시작 · <b>M</b> = 음소거</div>
+  <div class="rule keys">조작: <b>D</b> = 위쪽 레인 · <b>K</b> = 아래쪽 레인 · <b>P</b> = 일시정지 · <b>R</b> = 재시작 · <b>M</b> = 음소거 · <b>[ / ]</b> = 속도 조절</div>
 </div>
 
 <div class="panel">
@@ -127,11 +168,23 @@
   </div>
 </div>
 
+<!-- ===== 속도 조절 버튼 UI ===== -->
+<div class="speed-control">
+  <button class="speed-btn" id="btn-speed-down" title="속도 줄이기 (단축키: [)">-</button>
+  <div class="speed-display">SPEED <span id="speed-value">180</span></div>
+  <button class="speed-btn" id="btn-speed-up" title="속도 높이기 (단축키: ])">+</button>
+</div>
+
 <div class="stage">
   <canvas id="game" width="480" height="640"></canvas>
   <div id="overlay" class="overlay">
     <h2 id="overlay-title">Rhythm Dodge</h2>
-    <p id="overlay-desc">시작하려면 아래 버튼을 누르세요.<br />D = 위쪽 / K = 아래쪽 / P = 일시정지 / R = 재시작 / M = 음소거</p>
+    <p id="overlay-desc">
+      시작하려면 아래 버튼을 누르세요.<br />
+      D = 위쪽 / K = 아래쪽<br />
+      P = 일시정지 / R = 재시작 / M = 음소거<br />
+      [ / ] = 속도 조절
+    </p>
     <button id="overlay-btn">시작</button>
   </div>
 </div>
@@ -162,11 +215,14 @@ const NOTE_W = 64;
 const NOTE_H = 24;                 
 const LANE_TOP_Y = 0.35;           
 const LANE_BOTTOM_Y = 0.65;        
-const FOOTER_START_Y = 0.82;       // 하단 패널 시작 높이 (82%)
+const FOOTER_START_Y = 0.82;       
 
-let NOTE_SPEED = 180;
+/* ===== 속도 조절 상수 ===== */
+const SPEED_MIN = 100;
+const SPEED_MAX = 300;
+const SPEED_STEP = 10;
+let NOTE_SPEED = 180; 
 
-/* ===== 이펙트 배열 ===== */
 let hitEffects = [];
 
 function loadSave() {
@@ -209,6 +265,10 @@ const overlayBtn = document.getElementById('overlay-btn');
 const btnPause = document.getElementById('btn-pause');
 const btnRestart = document.getElementById('btn-restart');
 const btnMute = document.getElementById('btn-mute');
+
+const btnSpeedDown = document.getElementById('btn-speed-down');
+const btnSpeedUp = document.getElementById('btn-speed-up');
+const speedValueEl = document.getElementById('speed-value');
 
 let audioCtx = null;
 function ensureAudio() {
@@ -278,6 +338,19 @@ function toggleMute() {
 function updateMuteButton() {
   btnMute.textContent = `음소거: ${saved.muted ? 'ON' : 'OFF'} (M)`;
   btnMute.classList.toggle('active', saved.muted);
+}
+
+/* ===== 속도 조절 함수 ===== */
+function changeSpeed(delta) {
+  let newSpeed = NOTE_SPEED + delta;
+  // 범위 제한
+  if (newSpeed < SPEED_MIN) newSpeed = SPEED_MIN;
+  if (newSpeed > SPEED_MAX) newSpeed = SPEED_MAX;
+  
+  if (newSpeed !== NOTE_SPEED) {
+    NOTE_SPEED = newSpeed;
+    speedValueEl.textContent = NOTE_SPEED;
+  }
 }
 
 function findNearestNote(lane) {
@@ -383,59 +456,60 @@ function render() {
 
   // 3. 판정선 배경 띠
   ctx.fillStyle = 'rgba(240, 198, 116, 0.10)';
-  ctx.fillRect(judgeX - JUDGE_TOLERANCE, 0, JUDGE_TOLERANCE * 2, H);
+  ctx.fillRect(judgeX - JUDGE_TOLERANCE, 0, JUDGE_TOLERANCE * 2, footerY);
 
   // 4. 판정선 메인 라인
   ctx.strokeStyle = '#f0c674'; 
   ctx.lineWidth = 3;
-  ctx.beginPath(); ctx.moveTo(judgeX, 0); ctx.lineTo(judgeX, H); ctx.stroke();
-
-  // 5. D / K 안내 텍스트
-  ctx.fillStyle = '#8b949e'; 
-  ctx.font = 'bold 16px system-ui, sans-serif';
-  ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
-  ctx.fillText('D (위)', judgeX + 16, H * LANE_TOP_Y);
-  ctx.fillText('K (아래)', judgeX + 16, H * LANE_BOTTOM_Y);
-
-  // ==========================================
-  // ★ 6. 하단 패널 (Footer) - 허전함 채우기
-  // ==========================================
-  ctx.save();
-  // 하단 패널 배경
-  ctx.fillStyle = 'rgba(22, 27, 34, 0.8)'; // #161b22 반투명
-  ctx.fillRect(0, footerY, W, H - footerY);
-  
-  // 패널 윗부분 구분선
-  ctx.strokeStyle = '#30363d';
-  ctx.lineWidth = 1;
   ctx.beginPath(); 
-  ctx.moveTo(0, footerY); 
-  ctx.lineTo(W, footerY); 
+  ctx.moveTo(judgeX, 0); 
+  ctx.lineTo(judgeX, footerY); 
   ctx.stroke();
 
-  // 패널 텍스트 (속도 표시)
-  ctx.fillStyle = '#8b949e';
-  ctx.font = '14px system-ui, sans-serif';
+  // 5. D / K 안내 텍스트 및 레인 가이드라인
+  ctx.fillStyle = '#8b949e'; 
+  ctx.font = 'bold 16px system-ui, sans-serif';
+  ctx.textAlign = 'left'; 
+  ctx.textBaseline = 'middle';
+  ctx.fillText('D (위)', judgeX + 16, H * LANE_TOP_Y - 20);
+  ctx.fillText('K (아래)', judgeX + 16, H * LANE_BOTTOM_Y - 20);
+
+  ctx.strokeStyle = '#21262d';
+  ctx.lineWidth = 1;
+  ctx.setLineDash([4, 4]);
+  ctx.beginPath();
+  ctx.moveTo(judgeX, H * LANE_TOP_Y); ctx.lineTo(W, H * LANE_TOP_Y);
+  ctx.moveTo(judgeX, H * LANE_BOTTOM_Y); ctx.lineTo(W, H * LANE_BOTTOM_Y);
+  ctx.stroke();
+  ctx.setLineDash([]); 
+
+  // ==========================================
+  // 6. 하단 패널 (Footer) - 속도 조절 버튼 모양 UI
+  // ==========================================
+  ctx.save();
+  ctx.fillStyle = 'rgba(22, 27, 34, 0.9)'; 
+  ctx.fillRect(0, footerY, W, H - footerY);
+  ctx.strokeStyle = '#30363d';
+  ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.moveTo(0, footerY); ctx.lineTo(W, footerY); ctx.stroke();
+
+  const centerY = footerY + (H - footerY) / 2;
+  
+  // 하단 패널 중앙 텍스트 "SPEED 180"
+  ctx.fillStyle = '#f0c674';
+  ctx.font = 'bold 18px system-ui, sans-serif';
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
-  ctx.fillText(`SPEED  ${NOTE_SPEED}`, W / 2, footerY + 24);
+  ctx.fillText(`SPEED  ${NOTE_SPEED}`, W / 2, centerY);
 
-  // D / K 키캡 UI 그리기 (하단 패널 중앙에 예쁘게 배치)
-  const keycapY = footerY + 60;
-  const keycapW = 80;
-  const keycapH = 40;
-  const gap = 30;
-  const startX = (W - (keycapW * 2 + gap)) / 2;
-
-  drawKeycap(ctx, startX, keycapY, keycapW, keycapH, 'D', '위쪽');
-  drawKeycap(ctx, startX + keycapW + gap, keycapY, keycapW, keycapH, 'K', '아래쪽');
-
+  // 텍스트 양옆에 단축키 힌트 버튼 그리기
+  drawKeycap(ctx, W / 2 - 110, centerY - 16, 32, 32, '[');
+  drawKeycap(ctx, W / 2 + 78, centerY - 16, 32, 32, ']');
   ctx.restore();
   // ==========================================
 
-  // 7. 캔버스 내 실패 카운트 UI (우측 상단)
+  // 7. 캔버스 내 실패 카운트 UI
   const failColor = round.fail === 0 ? '#3fb950' : round.fail === 1 ? '#e3b341' : '#f85149';
-                  
   ctx.save();
   ctx.font = 'bold 22px system-ui, sans-serif';
   ctx.textAlign = 'right';
@@ -447,11 +521,8 @@ function render() {
     const isLost = i < round.fail;
     ctx.beginPath();
     ctx.arc(W - 30 - (i * 24), 56, 8, 0, Math.PI * 2);
-    if (isLost) {
-      ctx.strokeStyle = failColor; ctx.lineWidth = 2; ctx.stroke();
-    } else {
-      ctx.fillStyle = failColor; ctx.fill();
-    }
+    if (isLost) { ctx.strokeStyle = failColor; ctx.lineWidth = 2; ctx.stroke(); }
+    else { ctx.fillStyle = failColor; ctx.fill(); }
   }
   ctx.restore();
 
@@ -476,28 +547,21 @@ function render() {
   }
 }
 
-// 키캡 그리기 헬퍼 함수
-function drawKeycap(ctx, x, y, w, h, key, label) {
-  // 키캡 배경
+// 캔버스 내 단축키 모양 그리기 헬퍼 함수
+function drawKeycap(ctx, x, y, w, h, key) {
   ctx.fillStyle = '#21262d';
   ctx.strokeStyle = '#30363d';
   ctx.lineWidth = 1.5;
   ctx.beginPath();
-  ctx.roundRect(x, y, w, h, 8); // 둥근 사각형
+  ctx.roundRect(x, y, w, h, 6);
   ctx.fill();
   ctx.stroke();
 
-  // 키 텍스트
-  ctx.fillStyle = '#e6edf3';
-  ctx.font = 'bold 22px system-ui, sans-serif';
+  ctx.fillStyle = '#8b949e';
+  ctx.font = 'bold 16px system-ui, sans-serif';
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
-  ctx.fillText(key, x + w / 2, y + h / 2 - 2);
-
-  // 하단 레이블
-  ctx.fillStyle = '#8b949e';
-  ctx.font = '12px system-ui, sans-serif';
-  ctx.fillText(label, x + w / 2, y + h + 16);
+  ctx.fillText(key, x + w / 2, y + h / 2 + 1);
 }
 
 function updateUI() {
@@ -517,6 +581,11 @@ function hideOverlay() { overlay.classList.add('hidden'); }
 
 window.addEventListener('keydown', (e) => {
   if (e.repeat) return;
+  
+  // 인게임 단축키 (게임 중이 아니어도 작동)
+  if (e.code === 'BracketLeft') { changeSpeed(-SPEED_STEP); return; }
+  if (e.code === 'BracketRight') { changeSpeed(SPEED_STEP); return; }
+
   if (round.running && !round.paused && !round.gameOver) {
     if (e.code === LANE_KEYS.top)    { judge(0); return; }
     if (e.code === LANE_KEYS.bottom) { judge(1); return; }
@@ -538,6 +607,10 @@ overlayBtn.addEventListener('click', () => {
 btnPause.addEventListener('click', togglePause);
 btnRestart.addEventListener('click', startGame);
 btnMute.addEventListener('click', toggleMute);
+
+// 버튼 클릭 이벤트 연결
+btnSpeedDown.addEventListener('click', () => changeSpeed(-SPEED_STEP));
+btnSpeedUp.addEventListener('click', () => changeSpeed(SPEED_STEP));
 
 updateMuteButton(); updateUI(); render(); requestAnimationFrame(loop);
 </script>
