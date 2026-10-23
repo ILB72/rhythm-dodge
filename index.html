@@ -159,10 +159,13 @@ const DEFAULT_SAVE = { bestScore: 0, muted: false };
 /* ===== 레이아웃 상수 ===== */
 const JUDGE_LINE_X = 120;          
 const NOTE_START_X = 450;          
-const NOTE_W = 64;                 // 노트 가로 크기 (슬림하게 조정)
-const NOTE_H = 24;                 // 노트 세로 크기 (슬림하게 조정)
+const NOTE_W = 64;                 
+const NOTE_H = 24;                 
 
 let NOTE_SPEED = 180;
+
+/* ===== 이펙트 배열 ===== */
+let hitEffects = [];
 
 function loadSave() {
   try {
@@ -228,7 +231,6 @@ function playGameOverSound() {
   osc.stop(now + 0.5);
 }
 
-// 화면 정확히 반으로 나눈 각 구역의 중앙
 function getLaneY(lane) {
   return lane === 0 ? canvas.height * 0.25 : canvas.height * 0.75; 
 }
@@ -240,6 +242,7 @@ function resetRound() {
   round.running = true; round.paused = false; round.gameOver = false;
   round.timeLeft = ROUND_SECONDS; round.success = 0; round.fail = 0;
   round.notes = []; round.spawnAcc = 0; round.lastTime = performance.now();
+  hitEffects = []; 
   hideOverlay(); updateUI();
 }
 function startGame() { ensureAudio(); resetRound(); }
@@ -286,6 +289,12 @@ function findNearestNote(lane) {
   return best;
 }
 
+function spawnHitEffect(x, y, color) {
+  hitEffects.push({
+    x, y, radius: 5, alpha: 1.0, color,
+  });
+}
+
 function judge(lane) {
   if (!round.running || round.paused || round.gameOver) return;
   const judgeX = getJudgeLineX();
@@ -294,11 +303,14 @@ function judge(lane) {
   if (!near) return;
   const dist = Math.abs(near.x - judgeX);
   if (dist > NEAR_RANGE) return;
+  
   if (dist <= JUDGE_TOLERANCE) {
     near.hit = true; round.success += 1;
+    spawnHitEffect(judgeX, getLaneY(lane), '#f0c674');
     console.log(`[HIT] lane=${lane} success=${round.success}`);
   } else {
     near.hit = true; round.fail += 1;
+    spawnHitEffect(judgeX, getLaneY(lane), '#f85149');
     console.log(`[MISS] lane=${lane} fail=${round.fail}`);
     if (round.fail >= FAIL_LIMIT) { endGame(false); return; }
   }
@@ -331,12 +343,20 @@ function loop(now) {
     if (n.hit) continue;
     if (n.x < judgeX - JUDGE_TOLERANCE) {
       n.hit = true; round.fail += 1;
+      spawnHitEffect(judgeX, getLaneY(n.lane), '#f85149');
       console.log(`[MISS-AUTO] lane=${n.lane} fail=${round.fail}`);
       if (round.fail >= FAIL_LIMIT) { endGame(false); break; }
     }
   }
 
   round.notes = round.notes.filter(n => n.x > -100);
+  
+  hitEffects = hitEffects.filter(fx => {
+    fx.radius += 120 * dt;
+    fx.alpha -= 2.5 * dt;
+    return fx.alpha > 0;
+  });
+
   updateUI(); render();
 }
 
@@ -349,59 +369,81 @@ function render() {
   ctx.fillStyle = '#0d1117';
   ctx.fillRect(0, 0, W, H);
 
-  // ==========================================
-  // 1. 레인 배경 구분 (위/아래 영역 살짝 다르게)
-  // ==========================================
-  // 아래쪽 레인 배경 살짝 밝게
+  // 1. 레인 배경 구분
   ctx.fillStyle = '#11161d'; 
   ctx.fillRect(0, midY, W, midY);
 
-  // ==========================================
-  // 2. 화면 정중앙 가로 분할선 (위/아래 레인 경계)
-  // ==========================================
+  // 2. 가로 분할선
   ctx.strokeStyle = '#30363d';
   ctx.lineWidth = 2;
-  ctx.beginPath(); 
-  ctx.moveTo(0, midY); 
-  ctx.lineTo(W, midY); 
-  ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(0, midY); ctx.lineTo(W, midY); ctx.stroke();
 
-  // ==========================================
-  // 3. 판정선 (세로)
-  // ==========================================
-  // 판정선 영역 (노란색 반투명 띠)
+  // 3. 판정선 배경 띠
   ctx.fillStyle = 'rgba(240, 198, 116, 0.10)';
   ctx.fillRect(judgeX - JUDGE_TOLERANCE, 0, JUDGE_TOLERANCE * 2, H);
 
-  // 판정선 메인 라인
+  // 4. 판정선 메인 라인
   ctx.strokeStyle = '#f0c674'; 
   ctx.lineWidth = 3;
-  ctx.beginPath(); 
-  ctx.moveTo(judgeX, 0); 
-  ctx.lineTo(judgeX, H); 
-  ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(judgeX, 0); ctx.lineTo(judgeX, H); ctx.stroke();
 
-  // ==========================================
-  // 4. D / K 레인 안내 텍스트 (판정선 오른쪽, 레인 정중앙)
-  // ==========================================
+  // 5. D / K 안내 텍스트
   ctx.fillStyle = '#8b949e'; 
   ctx.font = 'bold 16px system-ui, sans-serif';
-  ctx.textAlign = 'left'; 
-  ctx.textBaseline = 'middle';
-  
-  // 위쪽 레인 (D)
+  ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
   ctx.fillText('D (위)', judgeX + 16, H * 0.25);
-  // 아래쪽 레인 (K)
   ctx.fillText('K (아래)', judgeX + 16, H * 0.75);
 
   // ==========================================
-  // 5. 노트 그리기
+  // ★ 6. 캔버스 내 실패 카운트 UI (우측 상단)
   // ==========================================
+  const failColor = round.fail === 0 ? '#3fb950' 
+                  : round.fail === 1 ? '#e3b341' 
+                  : '#f85149'; // 0회: 초록, 1회: 노랑, 2회 이상: 빨강
+                  
+  ctx.save();
+  ctx.font = 'bold 22px system-ui, sans-serif';
+  ctx.textAlign = 'right';
+  ctx.textBaseline = 'top';
+  
+  // 실패 텍스트 그리기
+  ctx.fillStyle = failColor;
+  ctx.fillText(`실패: ${round.fail} / ${FAIL_LIMIT}`, W - 20, 20);
+  
+  // 남은 목숨(하트 대신 원) 표시
+  for (let i = 0; i < FAIL_LIMIT; i++) {
+    const isLost = i < round.fail;
+    ctx.beginPath();
+    ctx.arc(W - 30 - (i * 24), 56, 8, 0, Math.PI * 2);
+    if (isLost) {
+      ctx.strokeStyle = failColor;
+      ctx.lineWidth = 2;
+      ctx.stroke();
+    } else {
+      ctx.fillStyle = failColor;
+      ctx.fill();
+    }
+  }
+  ctx.restore();
+
+  // 7. 노트 그리기
   for (const n of round.notes) {
     if (n.hit) continue;
-    const y = getLaneY(n.lane); // 각 레인의 중앙 Y축
+    const y = getLaneY(n.lane); 
     ctx.fillStyle = n.lane === 0 ? '#58a6ff' : '#3fb950';
     ctx.fillRect(n.x - NOTE_W / 2, y - NOTE_H / 2, NOTE_W, NOTE_H);
+  }
+
+  // 8. 판정 이펙트
+  for (const fx of hitEffects) {
+    ctx.save();
+    ctx.globalAlpha = Math.max(0, fx.alpha);
+    ctx.beginPath();
+    ctx.arc(fx.x, fx.y, fx.radius, 0, Math.PI * 2);
+    ctx.strokeStyle = fx.color;
+    ctx.lineWidth = 3;
+    ctx.stroke();
+    ctx.restore();
   }
 }
 
