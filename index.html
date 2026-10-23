@@ -16,7 +16,7 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    overflow-x: hidden;             /* 가로 넘침 방지 */
+    overflow-x: hidden;
     padding: 12px;
   }
 
@@ -59,14 +59,14 @@
   canvas {
     display: block;
     width: 100%;
-    aspect-ratio: 3 / 4;           /* 세로형 */
+    aspect-ratio: 3 / 4;
     background: #0d1117;
     border: 1px solid #30363d;
     border-radius: 8px;
     touch-action: none;
   }
 
-  /* ===== 오버레이 (시작/일시정지/종료) ===== */
+  /* ===== 오버레이 ===== */
   .overlay {
     position: absolute;
     inset: 0;
@@ -191,7 +191,6 @@ function loadSave() {
     const raw = localStorage.getItem(SAVE_KEY);
     if (!raw) return { ...DEFAULT_SAVE };                 // C24: 빈 값 → 기본값
     const parsed = JSON.parse(raw);
-    // C25: 형식 검사 — 손상 시 기본값
     if (
       typeof parsed !== 'object' || parsed === null ||
       typeof parsed.bestScore !== 'number' || !isFinite(parsed.bestScore) ||
@@ -221,8 +220,8 @@ const round = {
   success: 0,
   fail: 0,
   notes: [],
-  spawnAcc: 0,          // 노트 생성 누적 시간
-  lastTime: 0,          // performance.now() 기준 delta 계산
+  spawnAcc: 0,
+  lastTime: 0,
 };
 
 /* ============================================================
@@ -254,7 +253,7 @@ function ensureAudio() {
   if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
 }
 function playGameOverSound() {
-  if (saved.muted) return;              // C27: 음소거 즉시 반영
+  if (saved.muted) return;
   if (!audioCtx) return;
   const now = audioCtx.currentTime;
   const osc = audioCtx.createOscillator();
@@ -273,7 +272,7 @@ function playGameOverSound() {
    게임 로직
    ============================================================ */
 function getJudgeLineY() {
-  return canvas.height * 0.85;         // 판정선 (하단 15% 지점)
+  return canvas.height * 0.85;
 }
 function getLaneX(laneIndex) {
   const laneW = canvas.width / LANES;
@@ -281,7 +280,6 @@ function getLaneX(laneIndex) {
 }
 
 function resetRound() {
-  // C08/C09/C22: 성공/실패/재시작 뒤 현재 판 상태 전부 초기화
   round.running = true;
   round.paused = false;
   round.gameOver = false;
@@ -303,12 +301,12 @@ function startGame() {
 function endGame(isSuccess) {
   round.running = false;
   round.gameOver = true;
-  // C23: 최고 기록만 보존
+  round.notes = [];                    // ← 게임 종료 시 노트 제거
   if (round.success > saved.bestScore) {
     saved.bestScore = round.success;
     saveSave(saved);
   }
-  playGameOverSound();                  // C26: 게임 오버 시에만 소리
+  playGameOverSound();
   showOverlay(
     isSuccess ? '성공!' : '게임 오버',
     isSuccess
@@ -323,7 +321,6 @@ function togglePause() {
   if (!round.running || round.gameOver) return;
   round.paused = !round.paused;
   if (!round.paused) {
-    // C15: 재개 시 기준 시각 리셋 → 이탈 시간이 게임에 반영 안 됨
     round.lastTime = performance.now();
   }
   btnPause.classList.toggle('active', round.paused);
@@ -359,22 +356,23 @@ function findNearestNote(lane) {
 }
 
 function judge(lane) {
+  // 이중 방어: 게임 진행 중이 아니면 판정 자체를 하지 않음
+  if (!round.running || round.paused || round.gameOver) return;
+
   const judgeY = getJudgeLineY();
   const near = findNearestNote(lane);
   console.log(`[INPUT] lane=${lane} near=${near ? 'Y' : 'N'}`);
 
-  if (!near) return;                    // 근처에 노트 없음 → 입력 무시
+  if (!near) return;
 
   const dist = Math.abs(near.y - judgeY);
-  if (dist > NEAR_RANGE) return;        // 근처 범위 밖 → 무시
+  if (dist > NEAR_RANGE) return;
 
   if (dist <= JUDGE_TOLERANCE) {
-    // 성공
     near.hit = true;
     round.success += 1;
     console.log(`[HIT] lane=${lane} success=${round.success}`);
   } else {
-    // miss (판정선 근처지만 타이밍 어긋남)
     near.hit = true;
     round.fail += 1;
     console.log(`[MISS] lane=${lane} fail=${round.fail}`);
@@ -395,10 +393,9 @@ function loop(now) {
     return;
   }
 
-  const dt = Math.min((now - round.lastTime) / 1000, 0.1); // delta (초), 최대 0.1s
+  const dt = Math.min((now - round.lastTime) / 1000, 0.1);
   round.lastTime = now;
 
-  // 타이머 감소
   round.timeLeft -= dt;
   if (round.timeLeft <= 0) {
     round.timeLeft = 0;
@@ -407,7 +404,6 @@ function loop(now) {
     return;
   }
 
-  // 노트 생성
   round.spawnAcc += dt * 1000;
   while (round.spawnAcc >= SPAWN_INTERVAL) {
     round.spawnAcc -= SPAWN_INTERVAL;
@@ -419,13 +415,11 @@ function loop(now) {
     });
   }
 
-  // 노트 이동
   const judgeY = getJudgeLineY();
   for (const n of round.notes) {
     n.y += NOTE_SPEED * dt;
   }
 
-  // 판정선 아래로 지나간 노트 = miss
   for (const n of round.notes) {
     if (n.hit) continue;
     if (n.y > judgeY + JUDGE_TOLERANCE) {
@@ -436,7 +430,6 @@ function loop(now) {
     }
   }
 
-  // 화면 밖 노트 제거 (C16: 10분 실행 시 메모리 누수 방지)
   round.notes = round.notes.filter(n => n.y < canvas.height + 100);
 
   updateUI();
@@ -456,7 +449,6 @@ function render() {
   ctx.fillStyle = '#0d1117';
   ctx.fillRect(0, 0, W, H);
 
-  // 레인 구분선
   ctx.strokeStyle = '#21262d';
   ctx.lineWidth = 1;
   for (let i = 1; i < LANES; i++) {
@@ -466,7 +458,6 @@ function render() {
     ctx.stroke();
   }
 
-  // 판정선
   ctx.strokeStyle = '#f0c674';
   ctx.lineWidth = 2;
   ctx.beginPath();
@@ -474,11 +465,9 @@ function render() {
   ctx.lineTo(W, judgeY);
   ctx.stroke();
 
-  // 판정선 ±tolerance 영역
   ctx.fillStyle = 'rgba(240, 198, 116, 0.08)';
   ctx.fillRect(0, judgeY - JUDGE_TOLERANCE, W, JUDGE_TOLERANCE * 2);
 
-  // 노트
   for (const n of round.notes) {
     if (n.hit) continue;
     const x = getLaneX(n.lane);
@@ -511,9 +500,8 @@ function hideOverlay() {
    이벤트 등록 (C06/C12: 앱 초기화 시 1회만 등록, repeat 무시)
    ============================================================ */
 window.addEventListener('keydown', (e) => {
-  if (e.repeat) return;                 // C12 핵심: 연타 시 1:1 보장
+  if (e.repeat) return;
 
-  // 게임 진행 중일 때만 판정 (일시정지·게임오버 시 D/K 무시)
   if (round.running && !round.paused && !round.gameOver) {
     if (e.code === LANE_KEYS.left)  { judge(0); return; }
     if (e.code === LANE_KEYS.right) { judge(1); return; }
@@ -523,13 +511,11 @@ window.addEventListener('keydown', (e) => {
   if (e.code === 'KeyM') { toggleMute(); return; }
 });
 
-// C14: 포커스 이탈 시 자동 일시정지
 window.addEventListener('blur', () => {
   if (round.running && !round.paused && !round.gameOver) togglePause();
 });
 
-// C13: 창 크기 변경 뒤 게임 상태 유지
-window.addEventListener('resize', () => { /* 상태 유지, 렌더만 다음 프레임에 */ });
+window.addEventListener('resize', () => { /* 상태 유지 */ });
 
 overlayBtn.addEventListener('click', () => {
   if (round.paused) togglePause();
