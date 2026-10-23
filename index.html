@@ -171,7 +171,7 @@
 const LANES = 2;
 const LANE_KEYS = { left: 'KeyD', right: 'KeyK' };  // 2레인 × 1키 고정
 const JUDGE_TOLERANCE = 40;       // 판정선 안 (px)
-const NEAR_RANGE = 200;           // "근처" 판정 범위 (px) — 이 안에 노트 있으면 miss 처리
+const NEAR_RANGE = 200;           // "근처" 판정 범위 (px)
 const SPAWN_INTERVAL = 700;       // 노트 생성 간격 (ms) 고정
 const ROUND_SECONDS = 30;         // 한 판 길이 (초) 고정
 const FAIL_LIMIT = 3;             // 실패 3회 = 게임 오버
@@ -273,8 +273,7 @@ function playGameOverSound() {
    게임 로직
    ============================================================ */
 function getJudgeLineY() {
-  // 캔버스 내부 좌표 기준 판정선 (하단 15% 지점)
-  return canvas.height * 0.85;
+  return canvas.height * 0.85;         // 판정선 (하단 15% 지점)
 }
 function getLaneX(laneIndex) {
   const laneW = canvas.width / LANES;
@@ -360,12 +359,11 @@ function findNearestNote(lane) {
 }
 
 function judge(lane) {
-  // 확정: 판정선 ±NEAR_RANGE 안에 노트 있으면 miss/성공 판정, 없으면 무시 + 콘솔 기록
   const judgeY = getJudgeLineY();
   const near = findNearestNote(lane);
   console.log(`[INPUT] lane=${lane} near=${near ? 'Y' : 'N'}`);
 
-  if (!near) return;                    // 근처에 노트 없음 → 입력 무시 (상태 변화 없음)
+  if (!near) return;                    // 근처에 노트 없음 → 입력 무시
 
   const dist = Math.abs(near.y - judgeY);
   if (dist > NEAR_RANGE) return;        // 근처 범위 밖 → 무시
@@ -515,8 +513,11 @@ function hideOverlay() {
 window.addEventListener('keydown', (e) => {
   if (e.repeat) return;                 // C12 핵심: 연타 시 1:1 보장
 
-  if (e.code === LANE_KEYS.left)  { judge(0); return; }
-  if (e.code === LANE_KEYS.right) { judge(1); return; }
+  // 게임 진행 중일 때만 판정 (일시정지·게임오버 시 D/K 무시)
+  if (round.running && !round.paused && !round.gameOver) {
+    if (e.code === LANE_KEYS.left)  { judge(0); return; }
+    if (e.code === LANE_KEYS.right) { judge(1); return; }
+  }
   if (e.code === 'KeyP') { togglePause(); return; }
   if (e.code === 'KeyR') { startGame(); return; }
   if (e.code === 'KeyM') { toggleMute(); return; }
@@ -527,7 +528,7 @@ window.addEventListener('blur', () => {
   if (round.running && !round.paused && !round.gameOver) togglePause();
 });
 
-// C13: 창 크기 변경 뒤 게임 상태 유지 (캔버스는 CSS로 반응형, 내부 좌표 불변)
+// C13: 창 크기 변경 뒤 게임 상태 유지
 window.addEventListener('resize', () => { /* 상태 유지, 렌더만 다음 프레임에 */ });
 
 overlayBtn.addEventListener('click', () => {
