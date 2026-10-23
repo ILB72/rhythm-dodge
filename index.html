@@ -116,7 +116,6 @@
   <div class="sub">2-Lane Rhythm Game · 30초 생존</div>
   <div class="rule">규칙: 오른쪽에서 왼쪽으로 오는 도형이 판정선에 닿는 순간 해당 레인의 키를 누르세요. 정확히 누르면 성공, 놓치거나 너무 일찍 누르면 실패. <b>실패 3회 = 게임 오버</b>, 30초 생존 시 성공.</div>
   <div class="rule keys">조작: <b>D</b> = 위쪽 레인 · <b>K</b> = 아래쪽 레인 · <b>P</b> = 일시정지 · <b>R</b> = 재시작 · <b>M</b> = 음소거</div>
-  <div class="rule sub">효과: 게임 오버 시에만 소리 발생 (M으로 즉시 음소거)</div>
 </div>
 
 <div class="panel">
@@ -156,13 +155,14 @@ const FAIL_LIMIT = 3;
 const SAVE_KEY = 'rhythm-dodge-save-v1';
 const DEFAULT_SAVE = { bestScore: 0, muted: false };
 
-/* ===== 레이아웃 상수 (뮤즈대시/태고 스타일로 재배치) ===== */
-const JUDGE_LINE_X = 140;          // 판정선: 조금 더 안쪽으로 (가이드 텍스트 공간 확보)
-const NOTE_START_X = 500;          // 노트 시작: 화면 오른쪽 밖에서
+/* ===== 레이아웃 상수 ===== */
+const JUDGE_LINE_X = 140;          
+const NOTE_START_X = 500;          
 const NOTE_W = 64;                 
 const NOTE_H = 24;                 
-const LANE_TOP_Y = 0.35;           // 위쪽 레인 위치 (25% -> 35%로 모음)
-const LANE_BOTTOM_Y = 0.65;        // 아래쪽 레인 위치 (75% -> 65%로 모음)
+const LANE_TOP_Y = 0.35;           
+const LANE_BOTTOM_Y = 0.65;        
+const FOOTER_START_Y = 0.82;       // 하단 패널 시작 높이 (82%)
 
 let NOTE_SPEED = 180;
 
@@ -366,6 +366,7 @@ function render() {
   const W = canvas.width, H = canvas.height;
   const judgeX = getJudgeLineX();
   const midY = H * 0.5;
+  const footerY = H * FOOTER_START_Y;
 
   ctx.clearRect(0, 0, W, H);
   ctx.fillStyle = '#0d1117';
@@ -389,9 +390,7 @@ function render() {
   ctx.lineWidth = 3;
   ctx.beginPath(); ctx.moveTo(judgeX, 0); ctx.lineTo(judgeX, H); ctx.stroke();
 
-  // ==========================================
-  // ★ 5. D / K 안내 텍스트 (레인 중심선에 정확히 맞춤)
-  // ==========================================
+  // 5. D / K 안내 텍스트
   ctx.fillStyle = '#8b949e'; 
   ctx.font = 'bold 16px system-ui, sans-serif';
   ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
@@ -399,38 +398,64 @@ function render() {
   ctx.fillText('K (아래)', judgeX + 16, H * LANE_BOTTOM_Y);
 
   // ==========================================
-  // 6. 캔버스 내 실패 카운트 UI (우측 상단)
+  // ★ 6. 하단 패널 (Footer) - 허전함 채우기
   // ==========================================
-  const failColor = round.fail === 0 ? '#3fb950' 
-                  : round.fail === 1 ? '#e3b341' 
-                  : '#f85149';
+  ctx.save();
+  // 하단 패널 배경
+  ctx.fillStyle = 'rgba(22, 27, 34, 0.8)'; // #161b22 반투명
+  ctx.fillRect(0, footerY, W, H - footerY);
+  
+  // 패널 윗부분 구분선
+  ctx.strokeStyle = '#30363d';
+  ctx.lineWidth = 1;
+  ctx.beginPath(); 
+  ctx.moveTo(0, footerY); 
+  ctx.lineTo(W, footerY); 
+  ctx.stroke();
+
+  // 패널 텍스트 (속도 표시)
+  ctx.fillStyle = '#8b949e';
+  ctx.font = '14px system-ui, sans-serif';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(`SPEED  ${NOTE_SPEED}`, W / 2, footerY + 24);
+
+  // D / K 키캡 UI 그리기 (하단 패널 중앙에 예쁘게 배치)
+  const keycapY = footerY + 60;
+  const keycapW = 80;
+  const keycapH = 40;
+  const gap = 30;
+  const startX = (W - (keycapW * 2 + gap)) / 2;
+
+  drawKeycap(ctx, startX, keycapY, keycapW, keycapH, 'D', '위쪽');
+  drawKeycap(ctx, startX + keycapW + gap, keycapY, keycapW, keycapH, 'K', '아래쪽');
+
+  ctx.restore();
+  // ==========================================
+
+  // 7. 캔버스 내 실패 카운트 UI (우측 상단)
+  const failColor = round.fail === 0 ? '#3fb950' : round.fail === 1 ? '#e3b341' : '#f85149';
                   
   ctx.save();
   ctx.font = 'bold 22px system-ui, sans-serif';
   ctx.textAlign = 'right';
   ctx.textBaseline = 'top';
-  
-  // 실패 텍스트 그리기
   ctx.fillStyle = failColor;
   ctx.fillText(`실패: ${round.fail} / ${FAIL_LIMIT}`, W - 20, 20);
   
-  // 남은 목숨(하트 대신 원) 표시
   for (let i = 0; i < FAIL_LIMIT; i++) {
     const isLost = i < round.fail;
     ctx.beginPath();
     ctx.arc(W - 30 - (i * 24), 56, 8, 0, Math.PI * 2);
     if (isLost) {
-      ctx.strokeStyle = failColor;
-      ctx.lineWidth = 2;
-      ctx.stroke();
+      ctx.strokeStyle = failColor; ctx.lineWidth = 2; ctx.stroke();
     } else {
-      ctx.fillStyle = failColor;
-      ctx.fill();
+      ctx.fillStyle = failColor; ctx.fill();
     }
   }
   ctx.restore();
 
-  // 7. 노트 그리기
+  // 8. 노트 그리기
   for (const n of round.notes) {
     if (n.hit) continue;
     const y = getLaneY(n.lane); 
@@ -438,7 +463,7 @@ function render() {
     ctx.fillRect(n.x - NOTE_W / 2, y - NOTE_H / 2, NOTE_W, NOTE_H);
   }
 
-  // 8. 판정 이펙트
+  // 9. 판정 이펙트
   for (const fx of hitEffects) {
     ctx.save();
     ctx.globalAlpha = Math.max(0, fx.alpha);
@@ -449,6 +474,30 @@ function render() {
     ctx.stroke();
     ctx.restore();
   }
+}
+
+// 키캡 그리기 헬퍼 함수
+function drawKeycap(ctx, x, y, w, h, key, label) {
+  // 키캡 배경
+  ctx.fillStyle = '#21262d';
+  ctx.strokeStyle = '#30363d';
+  ctx.lineWidth = 1.5;
+  ctx.beginPath();
+  ctx.roundRect(x, y, w, h, 8); // 둥근 사각형
+  ctx.fill();
+  ctx.stroke();
+
+  // 키 텍스트
+  ctx.fillStyle = '#e6edf3';
+  ctx.font = 'bold 22px system-ui, sans-serif';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(key, x + w / 2, y + h / 2 - 2);
+
+  // 하단 레이블
+  ctx.fillStyle = '#8b949e';
+  ctx.font = '12px system-ui, sans-serif';
+  ctx.fillText(label, x + w / 2, y + h + 16);
 }
 
 function updateUI() {
