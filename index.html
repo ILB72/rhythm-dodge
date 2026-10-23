@@ -15,71 +15,24 @@
     display: flex;
     flex-direction: column;
     align-items: center;
+    justify-content: center; /* 화면 중앙 정렬 */
     overflow-x: hidden;
-    padding: 12px;
+    padding: 10px;
   }
-  .panel {
+  
+  /* 상단 상태바 (공간 최소화) */
+  .status-bar {
     width: 100%;
     max-width: 480px;
-    background: #161b22;
-    border: 1px solid #30363d;
-    border-radius: 8px;
-    padding: 10px 14px;
-    margin-bottom: 8px;
-    font-size: 13px;
-    line-height: 1.5;
-  }
-  .panel h1 { font-size: 16px; margin: 0 0 4px 0; color: #58a6ff; }
-  .panel .sub { color: #8b949e; font-size: 12px; }
-  .panel .rule { margin: 4px 0; }
-  .panel .keys { color: #f0c674; }
-  .status {
     display: flex;
     justify-content: space-between;
-    font-size: 13px;
-    margin-top: 6px;
-    gap: 8px;
-    flex-wrap: wrap;
-  }
-  .status span { color: #79c0ff; font-weight: 600; }
-  
-  .speed-control {
-    width: 100%;
-    max-width: 480px;
-    background: #161b22;
-    border: 1px solid #30363d;
-    border-radius: 8px;
-    padding: 10px 14px;
+    font-size: 14px;
     margin-bottom: 8px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 16px;
-    font-size: 13px;
+    padding: 0 4px;
+    color: #8b949e;
   }
-  .speed-btn {
-    background: #21262d;
-    color: #e6edf3;
-    border: 1px solid #30363d;
-    border-radius: 6px;
-    width: 40px;
-    height: 32px;
-    font-size: 18px;
-    font-weight: bold;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-  .speed-btn:hover { background: #30363d; }
-  .speed-display {
-    color: #f0c674;
-    font-weight: 600;
-    font-size: 15px;
-    min-width: 80px;
-    text-align: center;
-  }
-  .speed-display span { color: #79c0ff; }
+  .status-bar span { color: #79c0ff; font-weight: bold; }
+  .status-bar .best { color: #f0c674; }
 
   .stage {
     position: relative;
@@ -95,10 +48,12 @@
     border-radius: 8px;
     touch-action: none;
   }
+  
+  /* 오버레이 (시작 화면, 일시정지, 게임 오버) */
   .overlay {
     position: absolute;
     inset: 0;
-    background: rgba(13, 17, 23, 0.88);
+    background: rgba(13, 17, 23, 0.9);
     border-radius: 8px;
     display: flex;
     flex-direction: column;
@@ -106,22 +61,24 @@
     align-items: center;
     text-align: center;
     padding: 20px;
-    gap: 12px;
+    gap: 16px;
   }
   .overlay.hidden { display: none; }
-  .overlay h2 { margin: 0; font-size: 20px; }
-  .overlay p { margin: 0; color: #8b949e; font-size: 13px; line-height: 1.6; }
+  .overlay h2 { margin: 0; font-size: 24px; color: #58a6ff; }
+  .overlay .rule-text { color: #c9d1d9; font-size: 13px; line-height: 1.6; margin-bottom: 10px; }
   .overlay button {
     background: #238636;
     color: #fff;
     border: none;
     border-radius: 6px;
-    padding: 10px 20px;
-    font-size: 15px;
+    padding: 12px 24px;
+    font-size: 16px;
     font-weight: 600;
     cursor: pointer;
   }
   .overlay button:hover { background: #2ea043; }
+
+  /* 하단 컨트롤러 (속도 조절 포함) */
   .controls {
     width: 100%;
     max-width: 480px;
@@ -143,6 +100,7 @@
   }
   .controls button:hover { background: #30363d; }
   .controls button.active { background: #1f6feb; border-color: #1f6feb; }
+  
   @media (prefers-reduced-motion: reduce) {
     * { animation: none !important; transition: none !important; }
   }
@@ -150,42 +108,31 @@
 </head>
 <body>
 
-<div class="panel">
-  <h1>Rhythm Dodge</h1>
-  <div class="sub">2-Lane Rhythm Game · 30초 생존</div>
-  <div class="rule">규칙: 오른쪽에서 왼쪽으로 오는 도형이 판정선에 닿는 순간 해당 레인의 키를 누르세요. 정확히 누르면 성공, 놓치거나 너무 일찍 누르면 실패. <b>실패 3회 = 게임 오버</b>, 30초 생존 시 성공.</div>
-  <div class="rule keys">조작: <b>D</b> = 위쪽 레인 · <b>K</b> = 아래쪽 레인 · <b>P</b> = 일시정지 · <b>R</b> = 재시작 · <b>M</b> = 음소거 · <b>[ / ]</b> = 속도 조절</div>
-</div>
-
-<div class="panel">
-  <div class="status">
-    <div>남은 시간: <span id="ui-time">30.0</span>s</div>
-    <div>성공: <span id="ui-success">0</span></div>
-    <div>실패: <span id="ui-fail">0</span></div>
-    <div>최고 기록: <span id="ui-best">0.0초</span></div>
-  </div>
-</div>
-
-<div class="speed-control">
-  <button class="speed-btn" id="btn-speed-down" title="속도 줄이기 (단축키: [)">-</button>
-  <div class="speed-display">SPEED <span id="speed-value">180</span></div>
-  <button class="speed-btn" id="btn-speed-up" title="속도 높이기 (단축키: ])">+</button>
+<!-- ===== 최소화된 상단 상태바 ===== -->
+<div class="status-bar">
+  <div>시간: <span id="ui-time">30.0</span>s</div>
+  <div>성공: <span id="ui-success">0</span></div>
+  <div>실패: <span id="ui-fail">0</span></div>
+  <div class="best">최고: <span id="ui-best">0.0초</span></div>
 </div>
 
 <div class="stage">
   <canvas id="game" width="480" height="640"></canvas>
+  
+  <!-- 시작 화면 / 일시정지 / 게임오버 오버레이 -->
   <div id="overlay" class="overlay">
     <h2 id="overlay-title">Rhythm Dodge</h2>
-    <p id="overlay-desc">
-      시작하려면 아래 버튼을 누르세요.<br />
-      D = 위쪽 / K = 아래쪽<br />
-      P = 일시정지 / R = 재시작 / M = 음소거<br />
-      [ / ] = 속도 조절
-    </p>
+    <div id="overlay-desc" class="rule-text">
+      오른쪽에서 왼쪽으로 오는 도형이<br>판정선에 닿는 순간 해당 키를 누르세요.<br><br>
+      <b>D</b> = 위쪽 레인 / <b>K</b> = 아래쪽 레인<br>
+      <b>P</b> = 일시정지 / <b>R</b> = 재시작 / <b>M</b> = 음소거<br><br>
+      실패 3회 시 게임 오버, 30초 생존 시 성공
+    </div>
     <button id="overlay-btn">시작</button>
   </div>
 </div>
 
+<!-- ===== 하단 컨트롤러 (속도 조절 통합) ===== -->
 <div class="controls">
   <button id="btn-pause">일시정지 (P)</button>
   <button id="btn-restart">재시작 (R)</button>
@@ -208,21 +155,15 @@ const FAIL_LIMIT = 3;
 const SAVE_KEY = 'rhythm-dodge-save-v1';
 const DEFAULT_SAVE = { bestTime: 0, muted: false };
 
-/* ===== 레이아웃 상수 ===== */
+/* ===== 레이아웃 상수 (완벽 대칭) ===== */
 const JUDGE_LINE_X = 140;          
 const NOTE_START_X = 500;          
 const NOTE_W = 64;                 
 const NOTE_H = 24;                 
-
-/* ★ 기준점 완벽 대칭을 위한 레이아웃 설정 */
-const JUDGE_LINE_START_Y = 0.08;   // 상단 판정선 시작 (8%)
-const FOOTER_START_Y = 0.92;       // 하단 패널 시작 (92%) -> 위아래 여백 8%로 완벽 대칭
-
-// 플레이 영역(8% ~ 92%)의 진짜 중앙은 50%.
-// 50%를 기준으로 위아래 대칭이 되도록 레인 Y축을 재설정합니다.
-// (중앙에서 각각 15%씩 떨어진 위치: 0.35와 0.65)
 const LANE_TOP_Y = 0.35;           
 const LANE_BOTTOM_Y = 0.65;        
+const FOOTER_START_Y = 0.92;       
+const JUDGE_LINE_START_Y = 0.08;   
 
 const SPEED_MIN = 100;
 const SPEED_MAX = 300;
@@ -272,10 +213,6 @@ const btnPause = document.getElementById('btn-pause');
 const btnRestart = document.getElementById('btn-restart');
 const btnMute = document.getElementById('btn-mute');
 
-const btnSpeedDown = document.getElementById('btn-speed-down');
-const btnSpeedUp = document.getElementById('btn-speed-up');
-const speedValueEl = document.getElementById('speed-value');
-
 let audioCtx = null;
 function ensureAudio() {
   if (!audioCtx) {
@@ -324,13 +261,15 @@ function endGame(isSuccess) {
     saveSave(saved);
   }
   playGameOverSound();
-  showOverlay(
-    isSuccess ? '성공!' : '게임 오버',
-    isSuccess 
-      ? `30초 생존 성공!<br>최종 생존 시간: ${survivedTime}초` 
-      : `실패 3회 도달.<br>생존 시간: ${survivedTime}초`,
-    '다시 시작'
-  );
+  
+  // 오버레이 텍스트 업데이트 (게임 오버/성공)
+  overlayTitle.textContent = isSuccess ? '성공!' : '게임 오버';
+  overlayDesc.innerHTML = isSuccess 
+    ? `30초 생존 성공!<br>최종 생존 시간: ${survivedTime}초` 
+    : `실패 3회 도달.<br>생존 시간: ${survivedTime}초`;
+  overlayBtn.textContent = '다시 시작';
+  overlay.classList.remove('hidden');
+  
   updateUI();
 }
 
@@ -340,8 +279,15 @@ function togglePause() {
   if (!round.paused) round.lastTime = performance.now();
   btnPause.classList.toggle('active', round.paused);
   btnPause.textContent = round.paused ? '재개 (P)' : '일시정지 (P)';
-  if (round.paused) showOverlay('일시정지', 'P 또는 아래 버튼으로 재개', '재개');
-  else hideOverlay();
+  
+  if (round.paused) {
+    overlayTitle.textContent = '일시정지';
+    overlayDesc.innerHTML = 'P 또는 아래 버튼으로 재개하세요.';
+    overlayBtn.textContent = '재개';
+    overlay.classList.remove('hidden');
+  } else {
+    hideOverlay();
+  }
 }
 
 function toggleMute() {
@@ -358,7 +304,6 @@ function changeSpeed(delta) {
   if (newSpeed > SPEED_MAX) newSpeed = SPEED_MAX;
   if (newSpeed !== NOTE_SPEED) {
     NOTE_SPEED = newSpeed;
-    speedValueEl.textContent = NOTE_SPEED;
   }
 }
 
@@ -391,11 +336,9 @@ function judge(lane) {
   if (dist <= JUDGE_TOLERANCE) {
     near.hit = true; round.success += 1;
     spawnHitEffect(judgeX, getLaneY(lane), '#f0c674');
-    console.log(`[HIT] lane=${lane} success=${round.success}`);
   } else {
     near.hit = true; round.fail += 1;
     spawnHitEffect(judgeX, getLaneY(lane), '#f85149');
-    console.log(`[MISS] lane=${lane} fail=${round.fail}`);
     if (round.fail >= FAIL_LIMIT) { endGame(false); return; }
   }
   updateUI();
@@ -432,7 +375,6 @@ function loop(now) {
     if (n.x < judgeX - JUDGE_TOLERANCE) {
       n.hit = true; round.fail += 1;
       spawnHitEffect(judgeX, getLaneY(n.lane), '#f85149');
-      console.log(`[MISS-AUTO] lane=${n.lane} fail=${round.fail}`);
       if (round.fail >= FAIL_LIMIT) { endGame(false); break; }
     }
   }
@@ -451,7 +393,7 @@ function loop(now) {
 function render() {
   const W = canvas.width, H = canvas.height;
   const judgeX = getJudgeLineX();
-  const midY = H * 0.5; // 진짜 중앙 기준점
+  const midY = H * 0.5;
   const footerY = H * FOOTER_START_Y;
   const judgeTopY = H * JUDGE_LINE_START_Y;
 
@@ -459,18 +401,16 @@ function render() {
   ctx.fillStyle = '#0d1117';
   ctx.fillRect(0, 0, W, H);
 
-  // 1. 레인 배경 구분
+  // 1. 레인 배경 구분 (중앙 기준)
   ctx.fillStyle = '#11161d'; 
   ctx.fillRect(0, midY, W, midY);
 
-  // 2. 가로 분할선 (진짜 중앙 50%)
+  // 2. 가로 분할선 (진짜 중앙)
   ctx.strokeStyle = '#30363d';
   ctx.lineWidth = 2;
   ctx.beginPath(); ctx.moveTo(0, midY); ctx.lineTo(W, midY); ctx.stroke();
 
-  // ==========================================
-  // 3. 판정선 배경 띠 및 메인 라인 (8% ~ 92% 완벽 대칭)
-  // ==========================================
+  // 3. 판정선 배경 띠 및 메인 라인 (완벽 대칭)
   ctx.fillStyle = 'rgba(240, 198, 116, 0.10)';
   ctx.fillRect(judgeX - JUDGE_TOLERANCE, judgeTopY, JUDGE_TOLERANCE * 2, footerY - judgeTopY);
 
@@ -481,12 +421,10 @@ function render() {
   ctx.lineTo(judgeX, footerY); 
   ctx.stroke();
 
-  // ==========================================
-  // 4. D / K 안내 텍스트 (판정선 왼쪽으로 이동)
-  // ==========================================
+  // 4. D / K 안내 텍스트 (판정선 왼쪽)
   ctx.fillStyle = '#6e7681'; 
   ctx.font = 'bold 20px system-ui, sans-serif';
-  ctx.textAlign = 'right'; // 판정선 왼쪽에 붙게 우측 정렬
+  ctx.textAlign = 'right';
   ctx.textBaseline = 'middle';
   ctx.fillText('D', judgeX - 12, H * LANE_TOP_Y);
   ctx.fillText('K', judgeX - 12, H * LANE_BOTTOM_Y);
@@ -502,7 +440,7 @@ function render() {
   ctx.setLineDash([]); 
 
   // ==========================================
-  // 5. 하단 패널 (Footer - 92%에서 시작)
+  // 5. 하단 패널 (속도 표시)
   // ==========================================
   ctx.save();
   ctx.fillStyle = 'rgba(22, 27, 34, 0.9)'; 
@@ -517,10 +455,9 @@ function render() {
   ctx.font = 'bold 18px system-ui, sans-serif';
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
+  // 하단 패널에 속도 표시
   ctx.fillText(`SPEED  ${NOTE_SPEED}`, W / 2, centerY);
 
-  drawKeycap(ctx, W / 2 - 110, centerY - 16, 32, 32, '[');
-  drawKeycap(ctx, W / 2 + 78, centerY - 16, 32, 32, ']');
   ctx.restore();
 
   // ==========================================
@@ -564,22 +501,6 @@ function render() {
   }
 }
 
-function drawKeycap(ctx, x, y, w, h, key) {
-  ctx.fillStyle = '#21262d';
-  ctx.strokeStyle = '#30363d';
-  ctx.lineWidth = 1.5;
-  ctx.beginPath();
-  ctx.roundRect(x, y, w, h, 6);
-  ctx.fill();
-  ctx.stroke();
-
-  ctx.fillStyle = '#8b949e';
-  ctx.font = 'bold 16px system-ui, sans-serif';
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'middle';
-  ctx.fillText(key, x + w / 2, y + h / 2 + 1);
-}
-
 function updateUI() {
   uiTime.textContent = round.timeLeft.toFixed(1);
   uiSuccess.textContent = round.success;
@@ -587,12 +508,6 @@ function updateUI() {
   uiBest.textContent = saved.bestTime.toFixed(1) + '초';
 }
 
-function showOverlay(title, desc, btnText) {
-  overlayTitle.textContent = title;
-  overlayDesc.innerHTML = desc;
-  overlayBtn.textContent = btnText;
-  overlay.classList.remove('hidden');
-}
 function hideOverlay() { overlay.classList.add('hidden'); }
 
 window.addEventListener('keydown', (e) => {
@@ -622,9 +537,6 @@ overlayBtn.addEventListener('click', () => {
 btnPause.addEventListener('click', togglePause);
 btnRestart.addEventListener('click', startGame);
 btnMute.addEventListener('click', toggleMute);
-
-btnSpeedDown.addEventListener('click', () => changeSpeed(-SPEED_STEP));
-btnSpeedUp.addEventListener('click', () => changeSpeed(SPEED_STEP));
 
 updateMuteButton(); updateUI(); render(); requestAnimationFrame(loop);
 </script>
