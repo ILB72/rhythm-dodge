@@ -15,12 +15,11 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center; /* 화면 중앙 정렬 */
+    justify-content: center;
     overflow-x: hidden;
     padding: 10px;
   }
   
-  /* 상단 상태바 (공간 최소화) */
   .status-bar {
     width: 100%;
     max-width: 480px;
@@ -49,7 +48,6 @@
     touch-action: none;
   }
   
-  /* 오버레이 (시작 화면, 일시정지, 게임 오버) */
   .overlay {
     position: absolute;
     inset: 0;
@@ -78,7 +76,6 @@
   }
   .overlay button:hover { background: #2ea043; }
 
-  /* 하단 컨트롤러 (속도 조절 포함) */
   .controls {
     width: 100%;
     max-width: 480px;
@@ -108,7 +105,6 @@
 </head>
 <body>
 
-<!-- ===== 최소화된 상단 상태바 ===== -->
 <div class="status-bar">
   <div>시간: <span id="ui-time">30.0</span>s</div>
   <div>성공: <span id="ui-success">0</span></div>
@@ -119,7 +115,6 @@
 <div class="stage">
   <canvas id="game" width="480" height="640"></canvas>
   
-  <!-- 시작 화면 / 일시정지 / 게임오버 오버레이 -->
   <div id="overlay" class="overlay">
     <h2 id="overlay-title">Rhythm Dodge</h2>
     <div id="overlay-desc" class="rule-text">
@@ -132,7 +127,6 @@
   </div>
 </div>
 
-<!-- ===== 하단 컨트롤러 (속도 조절 통합) ===== -->
 <div class="controls">
   <button id="btn-pause">일시정지 (P)</button>
   <button id="btn-restart">재시작 (R)</button>
@@ -155,15 +149,18 @@ const FAIL_LIMIT = 3;
 const SAVE_KEY = 'rhythm-dodge-save-v1';
 const DEFAULT_SAVE = { bestTime: 0, muted: false };
 
-/* ===== 레이아웃 상수 (완벽 대칭) ===== */
+/* ===== 레이아웃 상수 ===== */
 const JUDGE_LINE_X = 140;          
 const NOTE_START_X = 500;          
 const NOTE_W = 64;                 
 const NOTE_H = 24;                 
+const FOOTER_START_Y = 0.88;       // 하단 패널 시작 (88%)
+const JUDGE_LINE_START_Y = 0.12;   // 상단 판정선 시작 (12%) -> 위아래 대칭
+
+// ★ 노트가 오는 라인 간격 (화면 중앙 50%를 기준으로 대칭 이동)
+// 0.5를 기준으로 위아래 ±0.15씩 떨어진 위치 (즉, 35%와 65%)
 const LANE_TOP_Y = 0.35;           
 const LANE_BOTTOM_Y = 0.65;        
-const FOOTER_START_Y = 0.92;       
-const JUDGE_LINE_START_Y = 0.08;   
 
 const SPEED_MIN = 100;
 const SPEED_MAX = 300;
@@ -262,7 +259,6 @@ function endGame(isSuccess) {
   }
   playGameOverSound();
   
-  // 오버레이 텍스트 업데이트 (게임 오버/성공)
   overlayTitle.textContent = isSuccess ? '성공!' : '게임 오버';
   overlayDesc.innerHTML = isSuccess 
     ? `30초 생존 성공!<br>최종 생존 시간: ${survivedTime}초` 
@@ -393,7 +389,7 @@ function loop(now) {
 function render() {
   const W = canvas.width, H = canvas.height;
   const judgeX = getJudgeLineX();
-  const midY = H * 0.5;
+  const midY = H * 0.5; 
   const footerY = H * FOOTER_START_Y;
   const judgeTopY = H * JUDGE_LINE_START_Y;
 
@@ -410,7 +406,9 @@ function render() {
   ctx.lineWidth = 2;
   ctx.beginPath(); ctx.moveTo(0, midY); ctx.lineTo(W, midY); ctx.stroke();
 
-  // 3. 판정선 배경 띠 및 메인 라인 (완벽 대칭)
+  // ==========================================
+  // 3. 판정선 배경 띠 및 메인 라인 (12% ~ 88% 완벽 대칭)
+  // ==========================================
   ctx.fillStyle = 'rgba(240, 198, 116, 0.10)';
   ctx.fillRect(judgeX - JUDGE_TOLERANCE, judgeTopY, JUDGE_TOLERANCE * 2, footerY - judgeTopY);
 
@@ -455,13 +453,11 @@ function render() {
   ctx.font = 'bold 18px system-ui, sans-serif';
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
-  // 하단 패널에 속도 표시
   ctx.fillText(`SPEED  ${NOTE_SPEED}`, W / 2, centerY);
-
   ctx.restore();
 
   // ==========================================
-  // 6. 캔버스 내 실패 카운트 UI (왼쪽 위)
+  // 6. 캔버스 내 실패 카운트 UI (판정선 위쪽 12% 영역 안에 배치)
   // ==========================================
   const failColor = round.fail === 0 ? '#3fb950' : round.fail === 1 ? '#e3b341' : '#f85149';
   ctx.save();
@@ -469,6 +465,8 @@ function render() {
   ctx.textAlign = 'left'; 
   ctx.textBaseline = 'top';
   ctx.fillStyle = failColor;
+  
+  // 판정선이 시작하는 12% 위쪽에 UI를 배치 (겹치지 않게)
   ctx.fillText(`실패: ${round.fail} / ${FAIL_LIMIT}`, 20, 20);
   
   for (let i = 0; i < FAIL_LIMIT; i++) {
