@@ -43,7 +43,6 @@
   }
   .status span { color: #79c0ff; font-weight: 600; }
   
-  /* ===== 속도 조절 버튼 UI ===== */
   .speed-control {
     width: 100%;
     max-width: 480px;
@@ -151,7 +150,6 @@
 </head>
 <body>
 
-<!-- ===== 안내 패널 ===== -->
 <div class="panel">
   <h1>Rhythm Dodge</h1>
   <div class="sub">2-Lane Rhythm Game · 30초 생존</div>
@@ -168,7 +166,6 @@
   </div>
 </div>
 
-<!-- ===== 속도 조절 버튼 UI ===== -->
 <div class="speed-control">
   <button class="speed-btn" id="btn-speed-down" title="속도 줄이기 (단축키: [)">-</button>
   <div class="speed-display">SPEED <span id="speed-value">180</span></div>
@@ -203,10 +200,9 @@ const LANE_KEYS = { top: 'KeyD', bottom: 'KeyK' };
 const JUDGE_TOLERANCE = 40;
 const NEAR_RANGE = 200;
 
-/* ===== 비트 및 난수 상수 ===== */
-const SPAWN_INTERVAL = 700;        // 기본 비트 간격 (ms)
-const SPAWN_JITTER = 150;          // 타이밍 난수 범위 (±150ms)
-const MIN_SPAWN_INTERVAL = 300;    // 최소 생성 간격 (겹침 방지)
+const SPAWN_INTERVAL = 700;
+const SPAWN_JITTER = 150;
+const MIN_SPAWN_INTERVAL = 300;
 const ROUND_SECONDS = 30;
 const FAIL_LIMIT = 3;
 const SAVE_KEY = 'rhythm-dodge-save-v1';
@@ -219,9 +215,9 @@ const NOTE_W = 64;
 const NOTE_H = 24;                 
 const LANE_TOP_Y = 0.35;           
 const LANE_BOTTOM_Y = 0.65;        
-const FOOTER_START_Y = 0.82;       
+const FOOTER_START_Y = 0.82;       // 하단 패널 시작
+const JUDGE_LINE_START_Y = 0.08;   // ★ 판정선 상단 시작점 (위아래 대칭을 위해 추가)
 
-/* ===== 속도 조절 상수 ===== */
 const SPEED_MIN = 100;
 const SPEED_MAX = 300;
 const SPEED_STEP = 10;
@@ -234,7 +230,6 @@ function loadSave() {
     const raw = localStorage.getItem(SAVE_KEY);
     if (!raw) return { ...DEFAULT_SAVE };
     const parsed = JSON.parse(raw);
-    // 기존 버전과 호환되도록, 만약 bestScore가 남아있다면 무시하고 기본값 반환
     if (
       typeof parsed !== 'object' || parsed === null ||
       typeof parsed.bestTime !== 'number' || !isFinite(parsed.bestTime) ||
@@ -316,8 +311,6 @@ function startGame() { ensureAudio(); resetRound(); }
 
 function endGame(isSuccess) {
   round.running = false; round.gameOver = true; round.notes = [];
-  
-  // 생존 시간 계산 (30초 - 남은 시간)
   const survivedTime = Number((ROUND_SECONDS - round.timeLeft).toFixed(1));
   
   if (survivedTime > saved.bestTime) {
@@ -353,12 +346,10 @@ function updateMuteButton() {
   btnMute.classList.toggle('active', saved.muted);
 }
 
-/* ===== 속도 조절 함수 ===== */
 function changeSpeed(delta) {
   let newSpeed = NOTE_SPEED + delta;
   if (newSpeed < SPEED_MIN) newSpeed = SPEED_MIN;
   if (newSpeed > SPEED_MAX) newSpeed = SPEED_MAX;
-  
   if (newSpeed !== NOTE_SPEED) {
     NOTE_SPEED = newSpeed;
     speedValueEl.textContent = NOTE_SPEED;
@@ -416,13 +407,11 @@ function loop(now) {
     round.timeLeft = 0; endGame(true); render(); return;
   }
 
-  // 비트 난수 적용 노트 생성
   round.spawnAcc += dt * 1000;
   while (round.spawnAcc >= SPAWN_INTERVAL) {
     const jitter = (Math.random() * 2 - 1) * SPAWN_JITTER;
     let nextInterval = SPAWN_INTERVAL + jitter;
     if (nextInterval < MIN_SPAWN_INTERVAL) nextInterval = MIN_SPAWN_INTERVAL;
-    
     round.spawnAcc -= nextInterval;
     
     const lane = Math.random() < 0.5 ? 0 : 1;
@@ -458,6 +447,7 @@ function render() {
   const judgeX = getJudgeLineX();
   const midY = H * 0.5;
   const footerY = H * FOOTER_START_Y;
+  const judgeTopY = H * JUDGE_LINE_START_Y; // ★ 판정선 상단 Y축
 
   ctx.clearRect(0, 0, W, H);
   ctx.fillStyle = '#0d1117';
@@ -472,27 +462,30 @@ function render() {
   ctx.lineWidth = 2;
   ctx.beginPath(); ctx.moveTo(0, midY); ctx.lineTo(W, midY); ctx.stroke();
 
-  // 3. 판정선 배경 띠
+  // ==========================================
+  // 3. 판정선 배경 띠 및 메인 라인 (위아래 대칭 적용)
+  // ==========================================
+  // 배경 띠 (judgeTopY부터 footerY까지만)
   ctx.fillStyle = 'rgba(240, 198, 116, 0.10)';
-  ctx.fillRect(judgeX - JUDGE_TOLERANCE, 0, JUDGE_TOLERANCE * 2, footerY);
+  ctx.fillRect(judgeX - JUDGE_TOLERANCE, judgeTopY, JUDGE_TOLERANCE * 2, footerY - judgeTopY);
 
-  // 4. 판정선 메인 라인
+  // 메인 라인
   ctx.strokeStyle = '#f0c674'; 
   ctx.lineWidth = 3;
   ctx.beginPath(); 
-  ctx.moveTo(judgeX, 0); 
+  ctx.moveTo(judgeX, judgeTopY); 
   ctx.lineTo(judgeX, footerY); 
   ctx.stroke();
 
   // ==========================================
-  // 5. D / K 안내 텍스트 (판정선 뒤쪽, 노트와 겹치지 않게)
+  // 4. D / K 안내 텍스트 (판정선 왼쪽으로 이동)
   // ==========================================
-  ctx.fillStyle = '#6e7681'; // 노트 색상과 구분되게 어두운 회색으로 변경
+  ctx.fillStyle = '#6e7681'; 
   ctx.font = 'bold 20px system-ui, sans-serif';
-  ctx.textAlign = 'left'; 
+  ctx.textAlign = 'right'; // 판정선 왼쪽에 붙게 우측 정렬
   ctx.textBaseline = 'middle';
-  ctx.fillText('D', judgeX + 12, H * LANE_TOP_Y);
-  ctx.fillText('K', judgeX + 12, H * LANE_BOTTOM_Y);
+  ctx.fillText('D', judgeX - 12, H * LANE_TOP_Y);
+  ctx.fillText('K', judgeX - 12, H * LANE_BOTTOM_Y);
 
   // 레인별 점선 가이드라인
   ctx.strokeStyle = '#21262d';
@@ -505,7 +498,7 @@ function render() {
   ctx.setLineDash([]); 
 
   // ==========================================
-  // 6. 하단 패널 (Footer)
+  // 5. 하단 패널 (Footer)
   // ==========================================
   ctx.save();
   ctx.fillStyle = 'rgba(22, 27, 34, 0.9)'; 
@@ -526,7 +519,7 @@ function render() {
   drawKeycap(ctx, W / 2 + 78, centerY - 16, 32, 32, ']');
   ctx.restore();
 
-  // 7. 캔버스 내 실패 카운트 UI
+  // 6. 캔버스 내 실패 카운트 UI
   const failColor = round.fail === 0 ? '#3fb950' : round.fail === 1 ? '#e3b341' : '#f85149';
   ctx.save();
   ctx.font = 'bold 22px system-ui, sans-serif';
@@ -544,7 +537,7 @@ function render() {
   }
   ctx.restore();
 
-  // 8. 노트 그리기
+  // 7. 노트 그리기
   for (const n of round.notes) {
     if (n.hit) continue;
     const y = getLaneY(n.lane); 
@@ -552,7 +545,7 @@ function render() {
     ctx.fillRect(n.x - NOTE_W / 2, y - NOTE_H / 2, NOTE_W, NOTE_H);
   }
 
-  // 9. 판정 이펙트
+  // 8. 판정 이펙트
   for (const fx of hitEffects) {
     ctx.save();
     ctx.globalAlpha = Math.max(0, fx.alpha);
