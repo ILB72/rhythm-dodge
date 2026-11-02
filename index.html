@@ -9,6 +9,7 @@
   html, body { margin: 0; padding: 0; }
   body {
     min-height: 100vh;
+    min-height: 100dvh;
     background: #0e1117;
     color: #e6edf3;
     font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
@@ -17,37 +18,28 @@
     align-items: center;
     justify-content: center;
     overflow-x: hidden;
+    overflow-y: auto;
     padding: 10px;
   }
-  
-  .status-bar {
-    width: 100%;
-    max-width: 480px;
-    display: flex;
-    justify-content: space-between;
-    font-size: 14px;
-    margin-bottom: 8px;
-    padding: 0 4px;
-    color: #8b949e;
-  }
-  .status-bar span { color: #79c0ff; font-weight: bold; }
-  .status-bar .best { color: #f0c674; }
+
+
 
   .stage {
     position: relative;
     width: 100%;
-    max-width: 480px;
+    max-width: 800px;
   }
   canvas {
     display: block;
     width: 100%;
-    aspect-ratio: 3 / 4;
+    aspect-ratio: 16 / 9;
+    height: auto;
     background: #0d1117;
     border: 1px solid #30363d;
     border-radius: 8px;
     touch-action: none;
   }
-  
+
   .overlay {
     position: absolute;
     inset: 0;
@@ -78,41 +70,13 @@
 
   .controls-wrapper {
     width: 100%;
-    max-width: 480px;
+    max-width: 800px;
     display: flex;
     flex-direction: column;
     gap: 8px;
     margin-top: 8px;
   }
-  
-  .speed-row {
-    display: flex;
-    gap: 8px;
-    width: 100%;
-  }
-  .speed-row button {
-    background: #21262d;
-    color: #e6edf3;
-    border: 1px solid #30363d;
-    border-radius: 6px;
-    padding: 8px;
-    font-size: 13px;
-    cursor: pointer;
-  }
-  .speed-row button:hover { background: #30363d; }
-  .speed-row .speed-display {
-    flex: 1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: #161b22;
-    border: 1px solid #30363d;
-    border-radius: 6px;
-    color: #f0c674;
-    font-weight: 600;
-    font-size: 14px;
-  }
-  .speed-row .speed-display span { color: #79c0ff; margin-left: 6px; }
+
 
   .action-row {
     display: flex;
@@ -131,45 +95,198 @@
   }
   .action-row button:hover { background: #30363d; }
   .action-row button.active { background: #1f6feb; border-color: #1f6feb; }
-  
+
   @media (prefers-reduced-motion: reduce) {
     * { animation: none !important; transition: none !important; }
+  }
+  /* ===== 네온 SF 아케이드 스타일 & 결과창 ===== */
+  .status-bar {
+    width: 100%;
+    max-width: 800px;
+    display: flex;
+    justify-content: space-between;
+    font-size: 14px;
+    margin-bottom: 8px;
+    padding: 0 6px;
+    color: #8b949e;
+    letter-spacing: 0.5px;
+    flex-wrap: wrap;
+    gap: 4px 12px;
+  }
+  .status-bar span { color: #00f0ff; font-weight: 700; text-shadow: 0 0 6px rgba(0, 240, 255, 0.4); }
+  .status-bar .best span { color: #ffd166; text-shadow: 0 0 6px rgba(255, 209, 102, 0.4); }
+
+  .overlay h2 {
+    margin: 0;
+    font-size: 28px;
+    color: #00f0ff;
+    text-shadow: 0 0 12px rgba(0, 240, 255, 0.6);
+    letter-spacing: 2px;
+  }
+  .overlay .rule-text {
+    color: #c9d1d9;
+    font-size: 14px;
+    line-height: 1.6;
+    margin-bottom: 4px;
+  }
+  .overlay button {
+    background: linear-gradient(135deg, #1f6feb, #00f0ff);
+    color: #0d1117;
+    border: none;
+    border-radius: 6px;
+    padding: 12px 28px;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 0 15px rgba(0, 240, 255, 0.4);
+    transition: all 0.2s ease;
+  }
+  .overlay button:hover {
+    box-shadow: 0 0 22px rgba(0, 240, 255, 0.7);
+    transform: translateY(-1px);
+  }
+
+  .result-box {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    width: 100%;
+    max-width: 360px;
+    background: rgba(22, 27, 34, 0.85);
+    border: 1px solid #30363d;
+    border-radius: 8px;
+    padding: 14px 18px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+  }
+  .result-main {
+    font-size: 16px;
+    color: #8b949e;
+  }
+  .result-score {
+    font-size: 28px;
+    font-weight: 900;
+    color: #ffd166;
+    text-shadow: 0 0 12px rgba(255, 209, 102, 0.6);
+    margin: 2px 0 4px 0;
+  }
+  .result-main b {
+    color: #00f0ff;
+    font-size: 18px;
+    text-shadow: 0 0 8px rgba(0, 240, 255, 0.5);
+  }
+  .badge-best {
+    display: inline-block;
+    background: #ffd166;
+    color: #0d1117;
+    font-size: 11px;
+    font-weight: 800;
+    padding: 2px 6px;
+    border-radius: 4px;
+    margin-left: 6px;
+    vertical-align: middle;
+  }
+  .result-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    font-size: 13px;
+    color: #8b949e;
+    text-align: left;
+    border-top: 1px solid #21262d;
+    border-bottom: 1px solid #21262d;
+    padding: 10px 0;
+  }
+  .result-grid span {
+    color: #e6edf3;
+    font-weight: 600;
+  }
+  .judge-summary {
+    display: flex;
+    justify-content: space-around;
+    gap: 6px;
+  }
+  .j-badge {
+    flex: 1;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 6px 4px;
+    border-radius: 6px;
+    border: 1px solid;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .j-badge b { font-size: 15px; }
+  .j-phantom {
+    border-color: rgba(0, 240, 255, 0.4);
+    background: rgba(0, 240, 255, 0.08);
+    color: #00f0ff;
+  }
+  .j-dodge {
+    border-color: rgba(63, 185, 80, 0.4);
+    background: rgba(63, 185, 80, 0.08);
+    color: #3fb950;
+  }
+  .j-graze {
+    border-color: rgba(249, 115, 22, 0.4);
+    background: rgba(249, 115, 22, 0.08);
+    color: #f97316;
+  }
+  .overlay { overflow: auto; }
+  .overlay.result-overlay { justify-content: flex-start; }
+  .overlay-desc { max-width: 100%; }
+  @media (max-width: 560px) {
+    body { justify-content: flex-start; padding: 8px; }
+    .status-bar { justify-content: center; font-size: 12px; }
+    .status-bar > div { flex: 1 1 28%; text-align: center; }
+    .action-row { flex-wrap: wrap; }
+    .action-row button { flex: 1 1 30%; min-width: 105px; }
+    .overlay { padding: 10px; gap: 8px; }
+    .overlay h2 { font-size: clamp(18px, 5vw, 28px); }
+    .overlay .rule-text { font-size: clamp(9px, 2.5vw, 14px); line-height: 1.4; margin: 0; }
+    .result-box { gap: 7px; padding: 8px; }
+    .result-score { font-size: 22px; }
+    .result-grid { font-size: 11px; padding: 6px 0; }
+  }
+  @media (max-height: 620px) {
+    body { justify-content: flex-start; }
+    .overlay.result-overlay { justify-content: flex-start; }
+    .overlay.result-overlay .result-box { flex: 0 0 auto; }
   }
 </style>
 </head>
 <body>
 
 <div class="status-bar">
-  <div>시간: <span id="ui-time">30.0</span>s</div>
+  <div>시간: <span id="ui-time">0.0</span>s</div>
+  <div>속도: <span id="ui-speed">1.0x</span></div>
+  <div>점수: <span id="ui-score">0</span> <span id="ui-multiplier">x1.0</span></div>
   <div>성공: <span id="ui-success">0</span></div>
-  <div>실패: <span id="ui-fail">0</span></div>
-  <div class="best">최고: <span id="ui-best">0.0초</span></div>
+  <div class="best">최고 생존: <span id="ui-best">0.0초</span></div>
+  <div class="best">최고 점수: <span id="ui-best-score">0</span></div>
 </div>
 
 <div class="stage">
-  <canvas id="game" width="480" height="640"></canvas>
-  
+  <canvas id="game" width="800" height="450"></canvas>
+
   <div id="overlay" class="overlay">
     <h2 id="overlay-title">Rhythm Dodge</h2>
     <div id="overlay-desc" class="rule-text">
-      오른쪽에서 왼쪽으로 오는 도형이<br>판정선에 닿는 순간 해당 키를 누르세요.<br><br>
-      <b>D</b> = 위쪽 레인 / <b>K</b> = 아래쪽 레인<br>
-      <b>P</b> = 일시정지 / <b>R</b> = 재시작 / <b>M</b> = 음소거<br><br>
-      실패 3회 시 게임 오버, 30초 생존 시 성공
+      오른쪽에서 왼쪽으로 질주하는 에너지를 회피하세요!<br>
+      판정선 중심에 닿는 순간 해당 키로 튕겨내세요.<br><br>
+      <b>D</b> = 위쪽 레인 &nbsp;|&nbsp; <b>K</b> = 아래쪽 레인<br>
+      <b>ESC</b> = 일시정지/재개 &nbsp;|&nbsp; <b>R</b> = 재시작 &nbsp;|&nbsp; <b>M</b> = 음소거<br><br>
+      판정(1x 기준): <span style="color:#00f0ff">PHANTOM (0~15px)</span> / <span style="color:#3fb950">DODGE (~40px)</span> / <span style="color:#f97316">GRAZE (~80px)</span><br>
+      쉴드 소진(실패 3회) 시 게임 오버 (무한 가속 모드)
     </div>
     <button id="overlay-btn">시작</button>
   </div>
 </div>
 
 <div class="controls-wrapper">
-  <div class="speed-row">
-    <button id="btn-speed-down" title="속도 줄이기 (단축키: [)">-</button>
-    <div class="speed-display">SPEED <span id="speed-value">180</span></div>
-    <button id="btn-speed-up" title="속도 높이기 (단축키: ])">+</button>
-  </div>
 
   <div class="action-row">
-    <button id="btn-pause">일시정지 (P)</button>
+    <button id="btn-pause">일시정지 (ESC)</button>
     <button id="btn-restart">재시작 (R)</button>
     <button id="btn-mute">음소거: OFF (M)</button>
   </div>
@@ -180,39 +297,159 @@
 
 const LANES = 2;
 const LANE_KEYS = { top: 'KeyD', bottom: 'KeyK' };
-const JUDGE_TOLERANCE = 40;
-const NEAR_RANGE = 200;
 
-const SPAWN_INTERVAL = 700;
-const SPAWN_JITTER = 150;
-const MIN_SPAWN_INTERVAL = 300;
-const ROUND_SECONDS = 30;
-const FAIL_LIMIT = 3;
+/* ===== 3단계 세부 판정 거리 상수 ===== */
+const JUDGE_PHANTOM = 15; // 기준 속도에서 0~15px
+const JUDGE_DODGE = 40;   // 기준 속도에서 15px 초과~40px
+const JUDGE_GRAZE = 80;   // 기준 속도에서 40px 초과~80px
+const LONG_NOTE_RULES = {
+  RELEASE_WINDOW_MULTIPLIER: 1.25,
+  TAIL_WARNING_SECONDS: 0.45,
+  HIGH_SPEED_LONG_REDUCTION: 0.35,
+  HIGH_SPEED_SHORT_BOOST: 0.25,
+  DURATION_WEIGHTS: { 0.5: 0.35, 1: 0.40, 2: 0.20, 4: 0.05 },
+};
+
+/* ===== 점수 설정 상수 (조정 가능) ===== */
+const SCORE_CONFIG = {
+  PHANTOM: 300,
+  DODGE: 200,
+  GRAZE: 100,
+  MISS: 0,
+  BOSS_HIT: 300,    // 보스 연타 1회당 점수 (PHANTOM과 동일)
+  BOSS_CLEAR: 1000, // 보스 완전 격퇴 보너스 점수
+};
+const SCORE_RULES = {
+  SURVIVAL_PER_SECOND: 10,
+  COMBO_BASE_MULTIPLIER: 1.0,
+  COMBO_STEP_EVERY: 10,
+  COMBO_STEP_MULTIPLIER: 0.1,
+  COMBO_MAX_MULTIPLIER: 2.0,
+};
+
+/* ===== 행성 근접 통과 이벤트 설정 ===== */
+const BOSS_CONFIG = {
+  FIRST_SPAWN_TIME: 60,
+  SPAWN_INTERVAL: 60,
+  WARN_DURATION: 2.0,
+  PASS_SPEED: 170,
+  PASS_START_X: 940,
+  PASS_END_X: -180,
+  CRASH_PASS_SPEED: 520,
+  CRASH_PASS_DURATION: 0.7,
+  HAZARD_STAGES: [
+    { type: 'shard-volley', label: 'SHARD VOLLEY', steps: [
+      { laneOffset: 0, gapTicks: 2, longMode: 'normal' },
+      { laneOffset: 0, gapTicks: 2, longMode: 'normal' },
+      { laneOffset: 1, gapTicks: 3, longMode: 'normal' },
+      { laneOffset: 1, gapTicks: 3, longMode: 'normal' },
+    ] },
+    { type: 'gravity-trill', label: 'GRAVITY TRILL', steps: [
+      { laneOffset: 0, gapTicks: 2, longMode: 'normal' },
+      { laneOffset: 1, gapTicks: 2, longMode: 'normal' },
+      { laneOffset: 0, gapTicks: 2, longMode: 'normal' },
+      { laneOffset: 1, gapTicks: 3, longMode: 'normal' },
+      { laneOffset: 0, gapTicks: 3, longMode: 'normal', simultaneous: true },
+    ] },
+    { type: 'gravity-wave', label: 'GRAVITY WAVE', steps: [
+      { laneOffset: 0, gapTicks: 3, longMode: 'long' },
+      { laneOffset: 1, gapTicks: 6, longMode: 'normal' },
+      { laneOffset: 0, gapTicks: 3, longMode: 'normal' },
+      { laneOffset: 1, gapTicks: 4, longMode: 'normal', simultaneous: true },
+    ] },
+  ],
+  HEAL_ON_CLEAR: 1,
+};
+
+const SPAWN_RULES = {
+  BASE_INTERVAL: 700,
+  MIN_INTERVAL: 300,
+  SPEED_INTERVAL_REDUCTION: 0.08,
+};
+const RHYTHM_RULES = {
+  BPM: 120,
+  BEAT_UNIT: 4, // 4분음표를 1박으로 하는 4/4 기준
+  BEATS_PER_BAR: 4,
+  TICKS_PER_BEAT: 8, // 32분음표 그리드
+  BPM_PER_SPEED_OCTAVE: 12,
+  PATTERN_GAP_SCALE: 1.0,
+  MIN_EVENT_INTERVAL_MS: 170,
+  BEAT_TICK_GAIN: 0.025,
+};
+const PATTERN_RULES = {
+  WEIGHTS: {
+    single: 0.275,
+    rest: 0.10,
+    same2: 0.10,
+    same3: 0.06,
+    trill3: 0.035,
+    simultaneous: 0.06,
+    zure: 0.10,
+    syncopation: 0.08,
+    longMix: 0.08,
+    eighth: 0.065,
+    sixteenth: 0.04,
+    thirtySecond: 0.005,
+  },
+  MIN_CROSS_LANE_INTERVAL_MS: 170,
+  LONG_NOTE_CHANCE: 0.18,
+  DIVERSITY_TIME_RAMP_SECONDS: 120,
+  DIVERSITY_TIME_WEIGHT: 0.14,
+  DIVERSITY_SPEED_RAMP_MULTIPLIERS: 5,
+  DIVERSITY_SPEED_WEIGHT: 0.11,
+  MAX_DIVERSITY: 0.25,
+  SAME_LANE_WEIGHT_REDUCTION: 0.45,
+  VARIED_WEIGHT_BOOST: 0.45,
+  PATTERNS: {
+    single:      { type: 'single', offsets: [0], gapTicks: [0], sameLane: false },
+    rest:        { type: 'rest', offsets: [0, 1], gapTicks: [0, 24], sameLane: false },
+    same2:       { type: 'sameLane', offsets: [0, 0], gapTicks: [0, 4], sameLane: true },
+    same3:       { type: 'sameLane', offsets: [0, 0, 0], gapTicks: [0, 3, 3], sameLane: true },
+    trill3:      { type: 'trill', offsets: [0, 1, 0], gapTicks: [0, 3, 3], sameLane: false },
+    simultaneous:{ type: 'simultaneous', offsets: [0], gapTicks: [0], simultaneous: true, sameLane: false },
+    zure:        { type: 'zure', offsets: [0, 1], gapTicks: [0, 2], sameLane: false },
+    eighth:      { type: 'eighth', offsets: [0, 1, 0, 1], gapTicks: [0, 4, 4, 4], sameLane: false },
+    sixteenth:   { type: 'fast', offsets: [0, 1, 0, 1], gapTicks: [0, 2, 2, 2], sameLane: false },
+    syncopation: { type: 'syncopation', offsets: [0, 1, 0, 1], gapTicks: [0, 6, 10, 6], sameLane: false },
+    longMix:     { type: 'longMix', offsets: [0, 1, 1], gapTicks: [0, 8, 4], longSteps: [0], normalSteps: [1, 2], sameLane: false },
+    // 32분 그리드에 배치한다. 안전 간격 제한이 필요한 경우 스케줄러가 다음 안전한 칸으로 민다.
+    thirtySecond:{ type: 'fast', offsets: [0, 1, 0], gapTicks: [0, 1, 1], sameLane: false },
+  },
+};
+const FAIL_LIMIT = 6; // three full shield cells, tracked in half-cell units
 const SAVE_KEY = 'rhythm-dodge-save-v1';
-const DEFAULT_SAVE = { bestTime: 0, muted: false };
+const DEFAULT_SAVE = { bestTime: 0, bestScore: 0, muted: false };
 
-/* ===== 레이아웃 상수 ===== */
-const JUDGE_LINE_X = 140;          
-const NOTE_START_X = 500;          
-const NOTE_W = 64;                 
-const NOTE_H = 24;                 
+/* ===== 가로형 레이아웃 상수 (800 x 450) ===== */
+const JUDGE_LINE_X = 140;
+const NOTE_W = 64;
+const NOTE_H = 24;
+const NOTE_START_MARGIN = 24;
+function getNoteStartX() {
+  // canvas.width는 CSS 축소와 무관한 논리 픽셀이다. 헤드가 롱노트 전체의 가장 왼쪽 경계다.
+  return canvas.width + NOTE_W / 2 + NOTE_START_MARGIN;
+}
 
-// ★ 하단 패널을 없애고, 상단 목숨 패널(20%)만 남겨서 판정선을 아래 끝까지 확장
-const TOP_PANEL_HEIGHT = 0.20;     
-const JUDGE_LINE_START_Y = 0.20;   
+// 상단 목숨 패널(20%) 및 판정선/레인 위치
+const TOP_PANEL_HEIGHT = 0.20;
+const JUDGE_LINE_START_Y = 0.20;
+const LANE_TOP_Y = 0.40;
+const LANE_BOTTOM_Y = 0.80;
 
-// 판정선 남은 영역(20% ~ 100%)의 중앙은 60%. 
-// 20% ~ 60%의 중앙은 40%, 60% ~ 100%의 중앙은 80%로 배치하여 대칭 구성
-const LANE_TOP_Y = 0.40;           
-const LANE_BOTTOM_Y = 0.80;        
-
-const SPEED_MIN = 100;
-const SPEED_MAX = 300;
-const SPEED_STEP = 10;
-let NOTE_SPEED = 180; 
+/* ===== 무한 가속 속도 상수 (최대값 제한 제거) ===== */
+const INITIAL_NOTE_SPEED = 180;
+const SPEED_ACCEL_PER_SEC = 4.5; // 4초마다 0.1배율(18px/s) 가속 (18 / 4 = 4.5)
+let NOTE_SPEED = INITIAL_NOTE_SPEED;
+// 판정은 픽셀 좌표 대신 실제 입력 시각과 목표 판정 시각의 차이로 계산한다.
+const JUDGE_WINDOWS_SECONDS = {
+  phantom: JUDGE_PHANTOM / INITIAL_NOTE_SPEED,
+  dodge: JUDGE_DODGE / INITIAL_NOTE_SPEED,
+  graze: JUDGE_GRAZE / INITIAL_NOTE_SPEED,
+};
 
 let particles = [];
 let bgLines = [];
+let floatingTexts = [];
 let lastBgLineSpawn = 0;
 
 function loadSave() {
@@ -225,7 +462,9 @@ function loadSave() {
       typeof parsed.bestTime !== 'number' || !isFinite(parsed.bestTime) ||
       typeof parsed.muted !== 'boolean'
     ) throw new Error('corrupt');
-    return { bestTime: parsed.bestTime, muted: parsed.muted };
+    const bestScore = typeof parsed.bestScore === 'number' && isFinite(parsed.bestScore) && parsed.bestScore >= 0
+      ? parsed.bestScore : DEFAULT_SAVE.bestScore;
+    return { bestTime: parsed.bestTime, bestScore, muted: parsed.muted };
   } catch {
     return { ...DEFAULT_SAVE };
   }
@@ -238,16 +477,39 @@ let saved = loadSave();
 
 const round = {
   running: false, paused: false, gameOver: false,
-  timeLeft: ROUND_SECONDS, success: 0, fail: 0,
-  notes: [], spawnAcc: 0, lastTime: 0,
+  countdown: 0, // 재개 시 3초 카운트다운
+  elapsedTime: 0, score: 0, judgementScore: 0, bossHitScore: 0, survivalBonus: 0, bossBonus: 0, success: 0, fail: 0,
+  combo: 0, maxCombo: 0,
+  nextBossTime: BOSS_CONFIG.FIRST_SPAWN_TIME,
+  judgements: { phantom: 0, dodge: 0, graze: 0 },
+  notes: [], pendingSpawn: null, activePattern: null, nextSimultaneousGroupId: 1,
+  lastPatternId: null, lastPatternTypes: [], lastSpawnLane: null, lastSpawnTargetTime: null, lastSpawnTargetBeat: null,
+  musicalBeats: 0, tempoBarIndex: 0, tempoBarStartBeat: 0,
+  tempoFromBpm: RHYTHM_RULES.BPM, tempoTargetBpm: RHYTHM_RULES.BPM, tempoBpm: RHYTHM_RULES.BPM,
+  lastBeatIndex: -1, lastTime: 0,
+  keyDown: [false, false],
+  activeLongNotes: [null, null],
+};
+
+const boss = {
+  active: false,
+  state: 'idle', // 'idle' | 'warn' | 'hazards' | 'crash-pass'
+  timer: 0,
+  x: BOSS_CONFIG.PASS_START_X,
+  y: 0,
+  hazardPatternStarted: false,
+  hazardStage: -1,
 };
 
 const canvas = document.getElementById('game');
 const ctx = canvas.getContext('2d');
 const uiTime = document.getElementById('ui-time');
+const uiSpeed = document.getElementById('ui-speed');
+const uiScore = document.getElementById('ui-score');
+const uiMultiplier = document.getElementById('ui-multiplier');
 const uiSuccess = document.getElementById('ui-success');
-const uiFail = document.getElementById('ui-fail');
 const uiBest = document.getElementById('ui-best');
+const uiBestScore = document.getElementById('ui-best-score');
 const overlay = document.getElementById('overlay');
 const overlayTitle = document.getElementById('overlay-title');
 const overlayDesc = document.getElementById('overlay-desc');
@@ -256,9 +518,214 @@ const btnPause = document.getElementById('btn-pause');
 const btnRestart = document.getElementById('btn-restart');
 const btnMute = document.getElementById('btn-mute');
 
-const btnSpeedDown = document.getElementById('btn-speed-down');
-const btnSpeedUp = document.getElementById('btn-speed-up');
-const speedValueEl = document.getElementById('speed-value');
+const ASSET_PATHS = {
+  background: 'assets/generated/background-cyber-grid.png',
+  ship: {
+    idle: 'assets/generated/ship-idle.png',
+    success: ['assets/generated/ship-success-phase.png', 'assets/generated/ship-success-roll.png', 'assets/generated/ship-success-burst.png'],
+    hit: ['assets/generated/ship-hit-recoil.png', 'assets/generated/ship-hit-spin.png'],
+    longDodge: ['assets/generated/ship-long-dodge-a.png', 'assets/generated/ship-long-dodge-b.png'],
+  },
+  meteor: { note: 'assets/generated/meteor-note.png', longHead: 'assets/generated/meteor-long-head.png' },
+  planet: 'assets/generated/planet-close-pass.png',
+};
+const gameAssets = { background: null, ship: {}, meteor: {}, planet: null };
+const shipMotion = { from: null, fromMode: 'idle', pose: null, startedAt: 0, mode: 'idle', holdStartedAt: null, holdMix: 0, lastRenderAt: 0 };
+const shieldImpactAt = [-Infinity, -Infinity];
+let shipImpactAt = -Infinity;
+const SHIP_MOTION = { crossfade: 0.13, action: 0.38, longFrame: 0.22, width: 82, height: 56 };
+
+const failedAssetWarnings = new Set();
+function loadImageAsset(path, label) {
+  if (typeof Image === 'undefined') return null;
+  const image = new Image();
+  image.onload = () => render();
+  image.onerror = () => {
+    if (failedAssetWarnings.has(path)) return;
+    failedAssetWarnings.add(path);
+    console.warn(`[Rhythm Dodge] 에셋 로드 실패: ${label} (${path}). 기존 캔버스 도형으로 대체합니다.`);
+  };
+  image.src = path;
+  return image;
+}
+function loadGameAssets() {
+  gameAssets.background = loadImageAsset(ASSET_PATHS.background, '배경');
+  gameAssets.ship = {
+    idle: loadImageAsset(ASSET_PATHS.ship.idle, 'ship-idle'),
+    success: ASSET_PATHS.ship.success.map((path, index) => loadImageAsset(path, `ship-success-${index + 1}`)),
+    hit: ASSET_PATHS.ship.hit.map((path, index) => loadImageAsset(path, `ship-hit-${index + 1}`)),
+    longDodge: ASSET_PATHS.ship.longDodge.map((path, index) => loadImageAsset(path, `ship-long-dodge-${index === 0 ? 'a' : 'b'}`)),
+  };
+  gameAssets.meteor.note = loadImageAsset(ASSET_PATHS.meteor.note, 'meteor-note');
+  gameAssets.meteor.longHead = loadImageAsset(ASSET_PATHS.meteor.longHead, 'meteor-long-head');
+  gameAssets.planet = loadImageAsset(ASSET_PATHS.planet, 'planet-close-pass');
+}
+function isImageReady(image) {
+  return !!image && image.complete && image.naturalWidth > 0 && image.naturalHeight > 0;
+}
+function drawSpriteContain(image, x, y, width, height) {
+  if (!isImageReady(image)) return false;
+  const aspect = image.naturalWidth / image.naturalHeight;
+  let drawWidth = width, drawHeight = height;
+  if (drawWidth / drawHeight > aspect) drawWidth = drawHeight * aspect;
+  else drawHeight = drawWidth / aspect;
+  ctx.drawImage(image,
+    x + (width - drawWidth) / 2, y + (height - drawHeight) / 2, drawWidth, drawHeight);
+  return true;
+}
+function triggerShipMotion(mode) {
+  const choices = mode === 'hit' ? gameAssets.ship.hit : gameAssets.ship.success;
+  if (!choices?.length) return;
+  const now = performance.now() / 1000;
+  shipMotion.from = shipMotion.mode !== 'idle' && now - shipMotion.startedAt < SHIP_MOTION.action
+    ? shipMotion.pose : null;
+  shipMotion.fromMode = shipMotion.mode;
+  shipMotion.pose = Math.floor(Math.random() * choices.length);
+  shipMotion.mode = mode;
+  shipMotion.startedAt = now;
+}
+function smoothMotion(value) {
+  const t = Math.max(0, Math.min(1, value));
+  return t * t * (3 - 2 * t);
+}
+function drawShipPose(image, fallback, alpha, x, y, width, height, rotation = 0) {
+  if (alpha <= 0) return;
+  const selected = isImageReady(image) ? image : fallback;
+  if (!isImageReady(selected)) return;
+  ctx.save();
+  ctx.globalAlpha *= alpha;
+  ctx.translate(x + width / 2, y + height / 2);
+  if (rotation) ctx.rotate(rotation);
+  drawSpriteContain(selected, -width / 2, -height / 2, width, height);
+  ctx.restore();
+}
+function renderShip(now) {
+  if (!isImageReady(gameAssets.ship.idle)) {
+    const fallbackX = 48 + SHIP_MOTION.width / 2, fallbackY = canvas.height * 0.60;
+    ctx.save(); ctx.translate(fallbackX, fallbackY);
+    ctx.fillStyle = '#15324a'; ctx.strokeStyle = '#6ee7ff'; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.moveTo(25, 0); ctx.lineTo(-20, -13); ctx.lineTo(-13, 0); ctx.lineTo(-20, 13); ctx.closePath(); ctx.fill(); ctx.stroke();
+    ctx.restore();
+    return;
+  }
+  const holding = !round.paused && round.countdown <= 0 && round.activeLongNotes.some(note => note && note.holding && !note.hit);
+  const delta = shipMotion.lastRenderAt ? Math.max(0, now - shipMotion.lastRenderAt) : 0;
+  shipMotion.lastRenderAt = now;
+  if (holding && shipMotion.holdStartedAt === null) shipMotion.holdStartedAt = now;
+  shipMotion.holdMix += ((holding ? 1 : 0) - shipMotion.holdMix) * (1 - Math.exp(-delta / SHIP_MOTION.crossfade));
+  if (shipMotion.holdMix < 0.005) {
+    shipMotion.holdMix = 0;
+    if (!holding) shipMotion.holdStartedAt = null;
+  }
+
+  const elapsed = now - shipMotion.startedAt;
+  const activeAction = shipMotion.mode !== 'idle' && elapsed < SHIP_MOTION.action;
+  const actionAlpha = activeAction ? Math.min(smoothMotion(elapsed / SHIP_MOTION.crossfade),
+    1 - smoothMotion((elapsed - (SHIP_MOTION.action - SHIP_MOTION.crossfade)) / SHIP_MOTION.crossfade)) : 0;
+  if (!activeAction) shipMotion.mode = 'idle';
+  const x = 48, y = canvas.height * 0.60 - SHIP_MOTION.height / 2;
+  const w = SHIP_MOTION.width, h = SHIP_MOTION.height;
+  const hitAge = now - shipImpactAt;
+  if (hitAge >= 0 && hitAge < 0.45) {
+    ctx.save(); ctx.globalAlpha = 1 - hitAge / 0.45;
+    ctx.strokeStyle = '#ff5969'; ctx.lineWidth = 3; ctx.shadowColor = '#ff354f'; ctx.shadowBlur = 12;
+    ctx.beginPath(); ctx.arc(x + w / 2, y + h / 2, 25 + hitAge * 26, 0, Math.PI * 2); ctx.stroke(); ctx.restore();
+  }
+  const baseAlpha = 1 - shipMotion.holdMix;
+  drawShipPose(gameAssets.ship.idle, gameAssets.ship.idle, baseAlpha * (1 - actionAlpha), x, y, w, h);
+  if (activeAction) {
+    const toImage = shipMotion.mode === 'hit' ? gameAssets.ship.hit[shipMotion.pose] : gameAssets.ship.success[shipMotion.pose];
+    const fromImage = shipMotion.from === null ? gameAssets.ship.idle
+      : shipMotion.fromMode === 'hit' ? gameAssets.ship.hit[shipMotion.from] : gameAssets.ship.success[shipMotion.from];
+    const blend = smoothMotion(elapsed / SHIP_MOTION.crossfade);
+    const tilt = shipMotion.mode === 'hit' ? Math.sin(elapsed * 18) * 0.10 : -Math.sin(elapsed * 12) * 0.035;
+    drawShipPose(fromImage, gameAssets.ship.idle, baseAlpha * actionAlpha * (1 - blend), x, y, w, h, tilt);
+    drawShipPose(toImage, gameAssets.ship.idle, baseAlpha * actionAlpha * blend, x, y, w, h, tilt);
+  }
+  if (shipMotion.holdMix > 0) {
+    const cycle = SHIP_MOTION.longFrame * 2;
+    const phase = shipMotion.holdStartedAt === null ? 0 : ((now - shipMotion.holdStartedAt) % cycle) / cycle;
+    const fade = 0.14;
+    let a, b, blend;
+    if (phase < 0.5 - fade / 2) { a = 0; b = 0; blend = 0; }
+    else if (phase < 0.5 + fade / 2) { a = 0; b = 1; blend = smoothMotion((phase - (0.5 - fade / 2)) / fade); }
+    else if (phase < 1 - fade / 2) { a = 1; b = 1; blend = 0; }
+    else { a = 1; b = 0; blend = smoothMotion((phase - (1 - fade / 2)) / fade); }
+    const alpha = shipMotion.holdMix;
+    drawShipPose(gameAssets.ship.longDodge[a], gameAssets.ship.idle, alpha * (a === b ? 1 : 1 - blend), x, y, w, h);
+    if (a !== b) drawShipPose(gameAssets.ship.longDodge[b], gameAssets.ship.idle, alpha * blend, x, y, w, h);
+  }
+}
+function renderPlanetLayer() {
+  if (!boss.active) return;
+  ctx.save();
+  const crashing = boss.state === 'crash-pass';
+  ctx.globalAlpha = boss.state === 'warn' ? 0.30 : 0.46;
+  const halo = ctx.createRadialGradient(boss.x, boss.y, 70, boss.x, boss.y, 280);
+  halo.addColorStop(0, crashing ? 'rgba(255, 67, 86, 0.28)' : 'rgba(65, 197, 232, 0.20)');
+  halo.addColorStop(1, 'rgba(65, 197, 232, 0)');
+  ctx.fillStyle = halo; ctx.beginPath(); ctx.arc(boss.x, boss.y, 280, 0, Math.PI * 2); ctx.fill();
+  if (isImageReady(gameAssets.planet)) {
+    ctx.save(); ctx.globalAlpha *= 0.9;
+    drawSpriteContain(gameAssets.planet, boss.x - 270, boss.y - 235, 540, 470);
+    ctx.restore();
+  } else {
+    ctx.strokeStyle = 'rgba(91, 155, 196, 0.8)'; ctx.lineWidth = 20;
+    ctx.beginPath(); ctx.ellipse(boss.x, boss.y, 210, 168, -0.15, 0.1, Math.PI * 1.9); ctx.stroke();
+    const planet = ctx.createRadialGradient(boss.x - 52, boss.y - 58, 18, boss.x, boss.y, 145);
+    planet.addColorStop(0, '#496d86'); planet.addColorStop(1, '#101d2d');
+    ctx.fillStyle = planet; ctx.beginPath(); ctx.arc(boss.x, boss.y, 145, 0, Math.PI * 2); ctx.fill();
+  }
+  ctx.globalAlpha *= 0.66;
+  ctx.strokeStyle = crashing ? 'rgba(255, 97, 117, 0.8)' : 'rgba(115, 222, 255, 0.55)';
+  ctx.lineWidth = 2.4;
+  ctx.beginPath(); ctx.ellipse(boss.x, boss.y, 255, 182, -0.16, 0.05, Math.PI * 1.95); ctx.stroke();
+  ctx.restore();
+}
+function renderShieldNodes(now) {
+  const contactX = getJudgeLineX();
+  const shipX = 48 + SHIP_MOTION.width / 2;
+  const shipY = canvas.height * 0.60;
+  const nodes = [
+    { lane: 0, color: '#00eaff' },
+    { lane: 1, color: '#25e89a' },
+  ];
+  ctx.save();
+  ctx.lineWidth = 1.4;
+  ctx.setLineDash([4, 5]);
+  ctx.strokeStyle = 'rgba(178, 230, 255, 0.16)';
+  for (const { lane } of nodes) {
+    ctx.beginPath(); ctx.moveTo(shipX + 8, shipY); ctx.lineTo(contactX - 15, getLaneY(lane)); ctx.stroke();
+  }
+  ctx.setLineDash([]);
+  const sharedIntegrity = Math.max(0, 1 - round.fail / FAIL_LIMIT);
+  for (const { lane, color } of nodes) {
+    const y = getLaneY(lane);
+    const age = now - shieldImpactAt[lane];
+    const impact = age >= 0 && age < 0.42 ? 1 - age / 0.42 : 0;
+    const ringColor = impact > 0.15 ? '#ff5666' : color;
+    const radius = 14 + impact * 3;
+    ctx.save();
+    ctx.globalAlpha = 0.48 + sharedIntegrity * 0.34 + impact * 0.28;
+    ctx.shadowColor = ringColor; ctx.shadowBlur = 5 + impact * 7;
+    ctx.strokeStyle = ringColor; ctx.lineWidth = 2 + impact;
+    ctx.beginPath(); ctx.arc(contactX, y, radius, 0.20, Math.PI * 1.78); ctx.stroke();
+    ctx.globalAlpha *= 0.68;
+    ctx.lineWidth = 1.2;
+    ctx.beginPath(); ctx.arc(contactX, y, 7, 0, Math.PI * 2); ctx.stroke();
+    ctx.fillStyle = ringColor;
+    ctx.beginPath(); ctx.arc(contactX, y, 2.2 + impact, 0, Math.PI * 2); ctx.fill();
+    if (impact > 0.1) {
+      ctx.shadowBlur = 0; ctx.globalAlpha = impact;
+      ctx.strokeStyle = '#ff9ca6'; ctx.lineWidth = 1.5;
+      ctx.beginPath(); ctx.moveTo(contactX - 9, y - 8); ctx.lineTo(contactX - 1, y - 1);
+      ctx.lineTo(contactX - 7, y + 7); ctx.moveTo(contactX + 2, y - 1); ctx.lineTo(contactX + 9, y + 7); ctx.stroke();
+    }
+    ctx.restore();
+  }
+  ctx.restore();
+}
+
 
 let audioCtx = null;
 function ensureAudio() {
@@ -282,62 +749,502 @@ function playGameOverSound() {
   osc.start(now);
   osc.stop(now + 0.5);
 }
+function playBeatTick(beatIndex) {
+  if (saved.muted || !audioCtx || audioCtx.state !== 'running') return;
+  const now = audioCtx.currentTime;
+  const isDownbeat = beatIndex % RHYTHM_RULES.BEATS_PER_BAR === 0;
+  const osc = audioCtx.createOscillator();
+  const gain = audioCtx.createGain();
+  osc.type = 'sine';
+  osc.frequency.setValueAtTime(isDownbeat ? 880 : 660, now);
+  gain.gain.setValueAtTime(RHYTHM_RULES.BEAT_TICK_GAIN, now);
+  gain.gain.exponentialRampToValueAtTime(0.001, now + 0.035);
+  osc.connect(gain).connect(audioCtx.destination);
+  osc.start(now);
+  osc.stop(now + 0.04);
+}
+function updateBeatClock() {
+  const beatIndex = Math.floor(round.musicalBeats);
+  if (beatIndex <= round.lastBeatIndex) return;
+  round.lastBeatIndex = beatIndex;
+  playBeatTick(beatIndex);
+}
 
 function getLaneY(lane) {
-  return lane === 0 ? canvas.height * LANE_TOP_Y : canvas.height * LANE_BOTTOM_Y; 
+  return lane === 0 ? canvas.height * LANE_TOP_Y : canvas.height * LANE_BOTTOM_Y;
 }
 function getJudgeLineX() {
   return JUDGE_LINE_X;
 }
+function getJudgeDistances() {
+  const speedRatio = NOTE_SPEED / INITIAL_NOTE_SPEED;
+  return {
+    phantom: JUDGE_PHANTOM * speedRatio,
+    dodge: JUDGE_DODGE * speedRatio,
+    graze: JUDGE_GRAZE * speedRatio,
+  };
+}
+function getSpawnInterval() {
+  const speedRatio = Math.max(1, NOTE_SPEED / INITIAL_NOTE_SPEED);
+  return Math.max(SPAWN_RULES.MIN_INTERVAL,
+    SPAWN_RULES.BASE_INTERVAL / (1 + SPAWN_RULES.SPEED_INTERVAL_REDUCTION * (speedRatio - 1)));
+}
+function getTargetBpm(speedRatio = NOTE_SPEED / INITIAL_NOTE_SPEED) {
+  return RHYTHM_RULES.BPM + RHYTHM_RULES.BPM_PER_SPEED_OCTAVE * Math.log2(Math.max(1, speedRatio));
+}
+function getTempoSlope() {
+  return (round.tempoTargetBpm - round.tempoFromBpm) / RHYTHM_RULES.BEATS_PER_BAR;
+}
+function getTempoBpmAtBeat(beat) {
+  const progress = Math.max(0, Math.min(1,
+    (beat - round.tempoBarStartBeat) / RHYTHM_RULES.BEATS_PER_BAR));
+  return round.tempoFromBpm + (round.tempoTargetBpm - round.tempoFromBpm) * progress;
+}
+function getEffectiveBpm() {
+  return getTempoBpmAtBeat(round.musicalBeats);
+}
+function getTempoSegmentSeconds(fromBpm, targetBpm, beatCount, slopeOverride = null) {
+  if (beatCount <= 0) return 0;
+  const slope = slopeOverride === null
+    ? (targetBpm - fromBpm) / RHYTHM_RULES.BEATS_PER_BAR : slopeOverride;
+  if (Math.abs(slope) < 1e-9) return beatCount * 60 / fromBpm;
+  return 60 / slope * Math.log((fromBpm + slope * beatCount) / fromBpm);
+}
+function getTimeAtBeat(targetBeat) {
+  let beat = round.musicalBeats;
+  let time = round.elapsedTime;
+  if (targetBeat <= beat) return time;
+
+  let barStart = round.tempoBarStartBeat;
+  let fromBpm = round.tempoFromBpm;
+  let targetBpm = round.tempoTargetBpm;
+  while (beat < targetBeat - 1e-9) {
+    const barEnd = barStart + RHYTHM_RULES.BEATS_PER_BAR;
+    const segmentEnd = Math.min(targetBeat, barEnd);
+    const slope = (targetBpm - fromBpm) / RHYTHM_RULES.BEATS_PER_BAR;
+    const localFromBpm = fromBpm + slope * (beat - barStart);
+    const segmentBeats = segmentEnd - beat;
+    time += getTempoSegmentSeconds(localFromBpm, targetBpm, segmentBeats, slope);
+    beat = segmentEnd;
+    if (beat >= barEnd - 1e-9 && beat < targetBeat - 1e-9) {
+      barStart = barEnd;
+      fromBpm = targetBpm;
+      const projectedSpeed = NOTE_SPEED + SPEED_ACCEL_PER_SEC * Math.max(0, time - round.elapsedTime);
+      const speedRatio = projectedSpeed / INITIAL_NOTE_SPEED;
+      targetBpm = getTargetBpm(speedRatio);
+    }
+  }
+  return time;
+}
+function getBeatAtTime(targetTime) {
+  if (targetTime <= round.elapsedTime) return round.musicalBeats;
+  let low = round.musicalBeats;
+  let high = low + Math.max(1, (targetTime - round.elapsedTime) * getEffectiveBpm() / 60);
+  while (getTimeAtBeat(high) < targetTime) {
+    high = round.musicalBeats + (high - round.musicalBeats) * 2;
+  }
+  for (let i = 0; i < 32; i++) {
+    const middle = (low + high) / 2;
+    if (getTimeAtBeat(middle) < targetTime) low = middle;
+    else high = middle;
+  }
+  return high;
+}
+function updateTempoClock(dt) {
+  let remaining = dt;
+  while (remaining > 1e-9) {
+    const barEnd = round.tempoBarStartBeat + RHYTHM_RULES.BEATS_PER_BAR;
+    if (round.musicalBeats >= barEnd - 1e-9) {
+      round.musicalBeats = barEnd;
+      round.tempoBpm = round.tempoTargetBpm;
+      round.tempoBarIndex += 1;
+      round.tempoBarStartBeat = barEnd;
+      round.tempoFromBpm = round.tempoBpm;
+      round.tempoTargetBpm = getTargetBpm();
+      continue;
+    }
+
+    const slope = getTempoSlope();
+    const currentBpm = getEffectiveBpm();
+    const secondsToBarEnd = Math.abs(slope) < 1e-9
+      ? Infinity : 60 / slope * Math.log(round.tempoTargetBpm / currentBpm);
+    const stepSeconds = Math.min(remaining, Math.max(0, secondsToBarEnd));
+    let beatAdvance;
+    if (Math.abs(slope) < 1e-9) {
+      beatAdvance = currentBpm * stepSeconds / 60;
+    } else {
+      beatAdvance = currentBpm / slope * (Math.exp(slope * stepSeconds / 60) - 1);
+    }
+    round.musicalBeats += beatAdvance;
+    remaining -= stepSeconds;
+    if (stepSeconds <= 1e-9) break;
+  }
+  const completedBarEnd = round.tempoBarStartBeat + RHYTHM_RULES.BEATS_PER_BAR;
+  if (round.musicalBeats >= completedBarEnd - 1e-9) {
+    round.musicalBeats = completedBarEnd;
+    round.tempoBpm = round.tempoTargetBpm;
+    round.tempoBarIndex += 1;
+    round.tempoBarStartBeat = completedBarEnd;
+    round.tempoFromBpm = round.tempoBpm;
+    round.tempoTargetBpm = getTargetBpm();
+  }
+  round.tempoBpm = getEffectiveBpm();
+}
+function getBeatSeconds() {
+  return 60 * 4 / (getEffectiveBpm() * RHYTHM_RULES.BEAT_UNIT);
+}
+function getRhythmGridSeconds() {
+  return getBeatSeconds() / RHYTHM_RULES.TICKS_PER_BEAT;
+}
+function getRhythmGridBeats() {
+  return 1 / RHYTHM_RULES.TICKS_PER_BEAT;
+}
+function alignToRhythmGrid(beat) {
+  const grid = getRhythmGridBeats();
+  return Math.ceil((beat - 1e-9) / grid) * grid;
+}
+function getPlanetPassSpeed() {
+  return BOSS_CONFIG.PASS_SPEED;
+}
+function getTravelDistance(seconds) {
+  return NOTE_SPEED * seconds + 0.5 * SPEED_ACCEL_PER_SEC * seconds * seconds;
+}
+function getNoteStartXForHit(targetHitTime) {
+  const timeToHit = Math.max(0, targetHitTime - round.elapsedTime);
+  return Math.max(getNoteStartX(), getJudgeLineX() + getTravelDistance(timeToHit));
+}
+function getTravelTime(distance) {
+  if (distance <= 0) return 0;
+  const acceleration = SPEED_ACCEL_PER_SEC;
+  if (acceleration <= 0) return distance / NOTE_SPEED;
+  return (2 * distance) / (NOTE_SPEED + Math.sqrt(NOTE_SPEED * NOTE_SPEED + 2 * acceleration * distance));
+}
+function getLaunchTimeForHit(targetHitTime) {
+  const timeUntilHit = targetHitTime - round.elapsedTime;
+  if (timeUntilHit < 0) return null;
+  const distanceToJudge = getNoteStartX() - getJudgeLineX();
+  const speedAtHit = NOTE_SPEED + SPEED_ACCEL_PER_SEC * timeUntilHit;
+  const acceleration = SPEED_ACCEL_PER_SEC;
+  let travelAfterLaunch;
+  if (acceleration <= 0) {
+    travelAfterLaunch = distanceToJudge / NOTE_SPEED;
+  } else {
+    const discriminant = speedAtHit * speedAtHit - 2 * acceleration * distanceToJudge;
+    if (discriminant < 0) return null;
+    // 발사 시각부터 목표 시각까지 남은 시간(tau)을 역산한다.
+    travelAfterLaunch = 2 * distanceToJudge / (speedAtHit + Math.sqrt(discriminant));
+  }
+  // 프레임 경계에서 발사 시각을 조금 넘겼어도 계획을 무효화하지 않는다.
+  // 호출부가 경과 시간을 시작 좌표에 반영하므로 목표 박자가 매 프레임 밀리는 현상을 막는다.
+  return targetHitTime - travelAfterLaunch;
+}
+function getPatternDiversity() {
+  const timeProgress = Math.min(1, round.elapsedTime / PATTERN_RULES.DIVERSITY_TIME_RAMP_SECONDS);
+  const speedProgress = Math.min(1, Math.max(0,
+    (NOTE_SPEED / INITIAL_NOTE_SPEED - 1) / PATTERN_RULES.DIVERSITY_SPEED_RAMP_MULTIPLIERS));
+  return Math.min(PATTERN_RULES.MAX_DIVERSITY,
+    timeProgress * PATTERN_RULES.DIVERSITY_TIME_WEIGHT + speedProgress * PATTERN_RULES.DIVERSITY_SPEED_WEIGHT);
+}
+function chooseLanePattern(random = Math.random) {
+  const diversity = getPatternDiversity();
+  const candidates = Object.entries(PATTERN_RULES.PATTERNS)
+    .filter(([id]) => id !== round.lastPatternId)
+    .filter(([, pattern]) => !(round.lastPatternTypes.length >= 2 &&
+      round.lastPatternTypes.slice(-2).every(type => type === pattern.type)))
+    .map(([id, pattern]) => ({
+      id,
+      pattern,
+      weight: PATTERN_RULES.WEIGHTS[id] * (pattern.sameLane
+        ? 1 - diversity * PATTERN_RULES.SAME_LANE_WEIGHT_REDUCTION
+        : 1 + diversity * PATTERN_RULES.VARIED_WEIGHT_BOOST),
+    }));
+  const totalWeight = candidates.reduce((sum, item) => sum + item.weight, 0);
+  let selection = random() * totalWeight;
+  const chosen = candidates.find(item => (selection -= item.weight) < 0) || candidates[candidates.length - 1];
+  const steps = chosen.pattern.offsets.map((laneOffset, index) => ({
+    laneOffset,
+    gapTicks: chosen.pattern.gapTicks[index] || 0,
+    simultaneous: !!chosen.pattern.simultaneous,
+    longMode: chosen.pattern.longSteps?.includes(index) ? 'long'
+      : chosen.pattern.normalSteps?.includes(index) ? 'normal' : 'random',
+  }));
+  round.lastPatternTypes.push(chosen.pattern.type);
+  if (round.lastPatternTypes.length > 2) round.lastPatternTypes.shift();
+  return { id: chosen.id, steps, baseLane: random() < 0.5 ? 0 : 1, index: 0 };
+}
+function chooseLongNoteDurationBeats(random = Math.random) {
+  const speedRatio = Math.max(1, NOTE_SPEED / INITIAL_NOTE_SPEED);
+  const reduceLong = Math.max(0.08, 1 - (speedRatio - 1) * LONG_NOTE_RULES.HIGH_SPEED_LONG_REDUCTION);
+  const choices = Object.entries(LONG_NOTE_RULES.DURATION_WEIGHTS).map(([beats, weight]) => ({
+    beats: Number(beats),
+    weight: Number(beats) >= 1
+      ? weight * reduceLong
+      : weight * (1 + (speedRatio - 1) * LONG_NOTE_RULES.HIGH_SPEED_SHORT_BOOST),
+  }));
+  const total = choices.reduce((sum, choice) => sum + choice.weight, 0);
+  let selection = random() * total;
+  return (choices.find(choice => (selection -= choice.weight) < 0) || choices[choices.length - 1]).beats;
+}
+function getLongNoteDurationSeconds(durationBeats, headTargetBeat = round.musicalBeats) {
+  return getTimeAtBeat(headTargetBeat + durationBeats) - getTimeAtBeat(headTargetBeat);
+}
+function getLongNoteLength(durationSeconds, headTargetTime) {
+  const untilHead = Math.max(0, headTargetTime - round.elapsedTime);
+  const speedAtHead = NOTE_SPEED + SPEED_ACCEL_PER_SEC * untilHead;
+  return speedAtHead * durationSeconds + 0.5 * SPEED_ACCEL_PER_SEC * durationSeconds * durationSeconds;
+}
+function getLongTailWindow() {
+  return getJudgeDistances().graze * LONG_NOTE_RULES.RELEASE_WINDOW_MULTIPLIER;
+}
+function getLongHoldProgress(note) {
+  if (!note.holding) return 0;
+  const holdStartedAt = note.holdStartedAt ?? round.elapsedTime;
+  const holdEndsAt = note.tailTargetTime ?? (holdStartedAt + note.durationSeconds);
+  return Math.max(0, Math.min(1,
+    (round.elapsedTime - holdStartedAt) / Math.max(1e-6, holdEndsAt - holdStartedAt)));
+}
+function getPatternTargetBeat(targetBeat, lane) {
+  let alignedBeat = alignToRhythmGrid(targetBeat);
+  if (round.lastSpawnTargetTime === null) return alignedBeat;
+  const minInterval = Math.max(RHYTHM_RULES.MIN_EVENT_INTERVAL_MS,
+    round.lastSpawnLane !== null && lane !== round.lastSpawnLane
+      ? PATTERN_RULES.MIN_CROSS_LANE_INTERVAL_MS : 0) / 1000;
+  const earliestTime = round.lastSpawnTargetTime + minInterval;
+  while (getTimeAtBeat(alignedBeat) < earliestTime - 1e-9) {
+    alignedBeat += getRhythmGridBeats();
+  }
+  return alignedBeat;
+}
+function findSafeSpawnPlan(pending, lane, frameDt = 0) {
+  const grid = getRhythmGridBeats();
+  let targetHitBeat = getPatternTargetBeat(pending.targetBeat, lane);
+  for (let attempt = 0; attempt < 128; attempt++) {
+    const targetHitTime = getTimeAtBeat(targetHitBeat);
+    const spawnAtTime = getLaunchTimeForHit(targetHitTime);
+    const earliestReachableHitTime = round.elapsedTime + getTravelTime(getNoteStartX() - getJudgeLineX());
+    if (spawnAtTime === null || targetHitTime < earliestReachableHitTime - 1e-6) {
+      targetHitBeat = alignToRhythmGrid(targetHitBeat + grid);
+      continue;
+    }
+    const startX = getNoteStartXForHit(targetHitTime);
+    const advancePx = NOTE_SPEED * frameDt;
+    const speedAtLaunch = NOTE_SPEED;
+    const grazeDistanceAtLaunch = JUDGE_GRAZE * speedAtLaunch / INITIAL_NOTE_SPEED;
+    const lanes = pending.simultaneous ? [0, 1] : [lane];
+    const longDurationSeconds = pending.long
+      ? getLongNoteDurationSeconds(pending.durationBeats, targetHitBeat) : 0;
+    const longLength = pending.long
+      ? getLongNoteLength(longDurationSeconds, targetHitTime) : 0;
+    if (lanes.every(spawnLane => canSpawnNoteInLane(
+      spawnLane, pending.long, advancePx, grazeDistanceAtLaunch, longLength, startX))) {
+      return {
+        targetHitBeat, targetHitTime, spawnAtTime, startX, lanes, longLength, longDurationSeconds,
+        tailTargetBeat: pending.long ? targetHitBeat + pending.durationBeats : null,
+        tailTargetTime: pending.long ? getTimeAtBeat(targetHitBeat + pending.durationBeats) : null,
+      };
+    }
+    targetHitBeat = alignToRhythmGrid(targetHitBeat + grid);
+  }
+  return null;
+}
 
 function resetRound() {
   round.running = true; round.paused = false; round.gameOver = false;
-  round.timeLeft = ROUND_SECONDS; round.success = 0; round.fail = 0;
-  round.notes = []; round.spawnAcc = 0; round.lastTime = performance.now();
-  
+  round.countdown = 0;
+  round.elapsedTime = 0; round.score = 0; round.success = 0; round.fail = 0;
+  round.judgementScore = 0; round.bossHitScore = 0; round.survivalBonus = 0; round.bossBonus = 0;
+  round.combo = 0; round.maxCombo = 0;
+  round.nextBossTime = BOSS_CONFIG.FIRST_SPAWN_TIME;
+  round.judgements = { phantom: 0, dodge: 0, graze: 0 };
+  round.notes = []; round.pendingSpawn = null; round.activePattern = null; round.nextSimultaneousGroupId = 1;
+  round.lastPatternId = null; round.lastPatternTypes = []; round.lastSpawnLane = null;
+  round.lastSpawnTargetTime = null; round.lastSpawnTargetBeat = null;
+  round.musicalBeats = 0; round.tempoBarIndex = 0; round.tempoBarStartBeat = 0;
+  round.tempoFromBpm = RHYTHM_RULES.BPM; round.tempoTargetBpm = RHYTHM_RULES.BPM;
+  round.tempoBpm = RHYTHM_RULES.BPM;
+  round.lastBeatIndex = -1; round.lastTime = performance.now();
+  round.keyDown = [false, false];
+  round.activeLongNotes = [null, null];
+  shipMotion.from = null; shipMotion.fromMode = 'idle'; shipMotion.pose = null; shipMotion.mode = 'idle';
+  shipMotion.startedAt = 0; shipMotion.holdStartedAt = null; shipMotion.holdMix = 0; shipMotion.lastRenderAt = 0;
+  shieldImpactAt[0] = shieldImpactAt[1] = -Infinity;
+  shipImpactAt = -Infinity;
+  NOTE_SPEED = INITIAL_NOTE_SPEED;
+
+  boss.active = false;
+  boss.state = 'idle';
+  boss.timer = 0;
+  boss.hazardPatternStarted = false;
+  boss.hazardStage = -1;
+  boss.x = BOSS_CONFIG.PASS_START_X;
+
   particles = [];
   bgLines = [];
+  floatingTexts = [];
   lastBgLineSpawn = 0;
 
+  btnPause.classList.remove('active');
+  btnPause.textContent = '일시정지 (ESC)';
   hideOverlay(); updateUI();
 }
 function startGame() { ensureAudio(); resetRound(); }
 
-function endGame(isSuccess) {
-  round.running = false; round.gameOver = true; round.notes = [];
-  const survivedTime = Number((ROUND_SECONDS - round.timeLeft).toFixed(1));
-  
-  if (survivedTime > saved.bestTime) {
-    saved.bestTime = survivedTime; 
-    saveSave(saved);
+function handlePlanetPass() {
+  boss.active = false;
+  boss.state = 'idle';
+  round.bossBonus += SCORE_CONFIG.BOSS_CLEAR;
+  refreshTotalScore();
+
+  // 통과 성공 시 기존 이벤트 성공과 동일하게 목숨 1개를 회복한다.
+  if (round.fail > 0) {
+    round.fail = Math.max(0, round.fail - BOSS_CONFIG.HEAL_ON_CLEAR * 2);
   }
+
+  spawnParticles(canvas.width * 0.5, boss.y, '#00f0ff', 32);
+  addFloatingText('PLANET PASSED', '#00f0ff', canvas.width * 0.5, boss.y);
+
+  // 다음 보스 등장 시간 설정 (현재 시간 + 60초)
+  round.nextBossTime = round.elapsedTime + BOSS_CONFIG.SPAWN_INTERVAL;
+  updateUI();
+}
+
+function startPlanetHazardStage(dt, stageIndex) {
+  const stage = BOSS_CONFIG.HAZARD_STAGES[stageIndex];
+  if (!stage) return false;
+  boss.state = 'hazards';
+  boss.hazardPatternStarted = true;
+  boss.hazardStage = stageIndex;
+  const travelTime = getTravelTime(getNoteStartX() - getJudgeLineX());
+  const targetBeat = alignToRhythmGrid(getBeatAtTime(round.elapsedTime + dt + travelTime));
+  round.activePattern = {
+    id: `planet-${stage.type}`,
+    type: 'planet-hazard-sequence',
+    baseLane: Math.random() < 0.5 ? 0 : 1,
+    stageLabel: stage.label,
+    steps: stage.steps.map(step => ({ ...step })),
+    index: 0,
+    nextHitBeat: targetBeat,
+  };
+  round.pendingSpawn = null;
+  return true;
+}
+
+function startPlanetHazards(dt) {
+  return startPlanetHazardStage(dt, 0);
+}
+
+function finishPlanetCrash() {
+  boss.active = false;
+  boss.state = 'idle';
+  boss.timer = 0;
+  round.nextBossTime = round.elapsedTime + BOSS_CONFIG.SPAWN_INTERVAL;
+  updateUI();
+}
+
+function stopPlanetAttacksAfterCrash(missedNote) {
+  round.pendingSpawn = null;
+  round.activePattern = null;
+  for (const note of round.notes) {
+    if (note.bossHazard && note !== missedNote) note.hit = true;
+  }
+  if (round.fail < FAIL_LIMIT) {
+    boss.active = true;
+    boss.state = 'crash-pass';
+    boss.timer = BOSS_CONFIG.CRASH_PASS_DURATION;
+  }
+}
+
+function endGame() {
+  round.running = false; round.gameOver = true; round.countdown = 0; round.notes = [];
+  boss.active = false;
+  boss.state = 'idle';
+
+  const survivedTime = Number(round.elapsedTime.toFixed(1));
+  const { isNewBestTime, isNewBestScore } = updateBestRecords(survivedTime, round.score);
+  const finalSpeed = (NOTE_SPEED / INITIAL_NOTE_SPEED).toFixed(1) + 'x';
   playGameOverSound();
-  
-  overlayTitle.textContent = isSuccess ? '성공!' : '게임 오버';
-  overlayDesc.innerHTML = isSuccess 
-    ? `30초 생존 성공!<br>최종 생존 시간: ${survivedTime}초` 
-    : `실패 3회 도달.<br>생존 시간: ${survivedTime}초`;
+
+  overlayTitle.textContent = '게임 오버';
+  overlayDesc.innerHTML = `
+    <div class="result-box">
+      <div class="result-main">TOTAL SCORE</div>
+      <div class="result-score">${formatScore(round.score)}</div>
+      <div class="result-main">생존 시간: <b>${survivedTime}초</b>${isNewBestTime ? '<span class="badge-best">최고 생존!</span>' : ''}</div>
+      <div class="result-grid">
+        <div>판정 점수: <span>${formatScore(round.judgementScore)}</span></div>
+        <div>생존 보너스: <span>${formatScore(round.survivalBonus)}</span></div>
+        <div>행성 이벤트 보너스: <span>${formatScore(round.bossBonus)}</span></div>
+        <div>최종 속도: <span>${finalSpeed}</span></div>
+        <div>총 회피 성공: <span>${round.success}</span></div>
+        <div>최고 기록: <span>${saved.bestTime.toFixed(1)}초</span></div>
+        <div>최고 점수: <span>${formatScore(saved.bestScore)}</span>${isNewBestScore ? '<span class="badge-best">NEW</span>' : ''}</div>
+        <div>최고 콤보: <span>${round.maxCombo}</span></div>
+      </div>
+      <div class="judge-summary">
+        <div class="j-badge j-phantom">PHANTOM<b>${round.judgements.phantom}</b></div>
+        <div class="j-badge j-dodge">DODGE<b>${round.judgements.dodge}</b></div>
+        <div class="j-badge j-graze">GRAZE<b>${round.judgements.graze}</b></div>
+      </div>
+    </div>
+  `;
   overlayBtn.textContent = '다시 시작';
   overlay.classList.remove('hidden');
-  
+  overlay.classList.add('result-overlay');
+
   updateUI();
+}
+
+function updateBestRecords(survivedTime, totalScore) {
+  const finalScore = Math.round(totalScore);
+  const isNewBestTime = survivedTime > saved.bestTime;
+  const isNewBestScore = finalScore > saved.bestScore;
+  if (!isNewBestTime && !isNewBestScore) return { isNewBestTime, isNewBestScore };
+  if (isNewBestTime) saved.bestTime = survivedTime;
+  if (isNewBestScore) saved.bestScore = finalScore;
+  saveSave(saved);
+  return { isNewBestTime, isNewBestScore };
 }
 
 function togglePause() {
   if (!round.running || round.gameOver) return;
-  round.paused = !round.paused;
-  if (!round.paused) round.lastTime = performance.now();
-  btnPause.classList.toggle('active', round.paused);
-  btnPause.textContent = round.paused ? '재개 (P)' : '일시정지 (P)';
-  
-  if (round.paused) {
-    overlayTitle.textContent = '일시정지';
-    overlayDesc.innerHTML = 'P 또는 아래 버튼으로 재개하세요.';
-    overlayBtn.textContent = '재개';
-    overlay.classList.remove('hidden');
-  } else {
-    hideOverlay();
+
+  // 재개 카운트다운 도중 ESC나 버튼을 누르면: 카운트다운을 즉시 취소하고 일시정지 상태로 복귀
+  if (round.countdown > 0) {
+    round.countdown = 0;
+    round.paused = true;
+    btnPause.classList.add('active');
+    btnPause.textContent = '재개 (ESC)';
+    showPauseOverlay();
+    return;
   }
+
+  if (round.paused) {
+    // 일시정지 상태에서 재개: 기존 카운트다운이 없음을 확인하고 단일 3초 카운트다운 시작
+    round.paused = false;
+    round.countdown = 3.0;
+    round.keyDown = [false, false];
+    round.activeLongNotes = [null, null];
+    for (const note of round.notes) if (note.long) note.holding = false;
+    round.lastTime = performance.now();
+    btnPause.classList.remove('active');
+    btnPause.textContent = '일시정지 (ESC)';
+    hideOverlay();
+  } else {
+    // 게임 진행 중 일시정지
+    round.paused = true;
+    round.countdown = 0;
+    btnPause.classList.add('active');
+    btnPause.textContent = '재개 (ESC)';
+    showPauseOverlay();
+  }
+}
+
+function showPauseOverlay() {
+  overlayTitle.textContent = '일시정지';
+  overlayDesc.innerHTML = 'ESC 또는 아래 버튼으로 재개하세요.<br><small style="color:#8b949e">3초 카운트다운 후 게임이 시작됩니다.</small>';
+  overlayBtn.textContent = '재개';
+  overlay.classList.remove('hidden');
+  overlay.classList.remove('result-overlay');
 }
 
 function toggleMute() {
@@ -348,33 +1255,83 @@ function updateMuteButton() {
   btnMute.classList.toggle('active', saved.muted);
 }
 
-function changeSpeed(delta) {
-  let newSpeed = NOTE_SPEED + delta;
-  if (newSpeed < SPEED_MIN) newSpeed = SPEED_MIN;
-  if (newSpeed > SPEED_MAX) newSpeed = SPEED_MAX;
-  if (newSpeed !== NOTE_SPEED) {
-    NOTE_SPEED = newSpeed;
-    speedValueEl.textContent = NOTE_SPEED;
-  }
+function addFloatingText(text, color, x, y) {
+  floatingTexts.push({
+    text,
+    color,
+    x,
+    y,
+    duration: 0.5,
+    elapsed: 0
+  });
 }
 
-function findNearestNote(lane) {
-  let best = null, bestDist = Infinity;
-  const judgeX = getJudgeLineX();
-  for (const n of round.notes) {
-    if (n.lane !== lane || n.hit) continue;
-    const d = Math.abs(n.x - judgeX);
-    if (d < bestDist) { bestDist = d; best = n; }
+function getInputGameTime() {
+  if (!round.running || round.paused || round.countdown > 0) return round.elapsedTime;
+  // 게임 시계는 프레임에서 최대 100ms씩 진행하므로 실제 키 이벤트를 같은 시계로 보간한다.
+  const sinceFrame = Math.max(0, (performance.now() - round.lastTime) / 1000);
+  return round.elapsedTime + Math.min(0.1, sinceFrame);
+}
+
+function findNearestNote(lane, inputTime) {
+  let best = null, bestDelta = Infinity;
+  for (const note of round.notes) {
+    if (note.lane !== lane || note.hit || note.judged) continue;
+    const targetTime = Number.isFinite(note.targetHitTime)
+      ? note.targetHitTime
+      : round.elapsedTime + (note.x - getJudgeLineX()) / NOTE_SPEED;
+    const delta = Math.abs(inputTime - targetTime);
+    if (delta <= JUDGE_WINDOWS_SECONDS.graze && delta < bestDelta) {
+      bestDelta = delta;
+      best = { note, delta };
+    }
   }
   return best;
+}
+
+// 점유 구간은 판정 허용 거리와 실제 렌더링 폭/롱노트 길이 중 더 큰 범위를 포함한다.
+function getNoteOccupiedRange(note, judgeRadius = getJudgeDistances().graze) {
+  const visualLeft = note.x - NOTE_W / 2;
+  const visualRight = note.x + (note.long ? note.length + 5 : NOTE_W / 2);
+  const headJudgeLeft = note.x - judgeRadius;
+  const headJudgeRight = note.x + judgeRadius;
+  const tailJudgeLeft = note.long ? note.x + note.length - judgeRadius : headJudgeLeft;
+  const tailJudgeRight = note.long ? note.x + note.length + judgeRadius : headJudgeRight;
+  return {
+    left: Math.min(visualLeft, headJudgeLeft, tailJudgeLeft),
+    right: Math.max(visualRight, headJudgeRight, tailJudgeRight),
+  };
+}
+
+function canSpawnNoteInLane(lane, isLong, advancePx = 0, judgeRadius = getJudgeDistances().graze, longLength = 0, candidateX = getNoteStartX()) {
+  const candidate = { lane, x: candidateX, long: isLong, length: isLong ? longLength : 0 };
+  const range = getNoteOccupiedRange(candidate, judgeRadius);
+  return !round.notes.some(note => {
+    if (note.hit || note.lane !== lane) return false;
+    const occupied = getNoteOccupiedRange({ ...note, x: note.x - advancePx }, judgeRadius);
+    return range.left <= occupied.right && occupied.left <= range.right;
+  });
+}
+
+function canSpawnAtFramePosition(lane, isLong, longLength, candidateX, dt) {
+  const radius = getJudgeDistances().graze;
+  const candidate = { lane, x: candidateX, long: isLong, length: isLong ? longLength : 0 };
+  const range = getNoteOccupiedRange(candidate, radius);
+  return !round.notes.some(note => {
+    if (note.hit || note.lane !== lane) return false;
+    // 이번 프레임 중 이미 생성된 노트는 현재 좌표를 쓰고, 이전 프레임 노트만 함께 전진시킨다.
+    const advance = note.spawnedAtTime === round.elapsedTime ? 0 : NOTE_SPEED * dt;
+    const occupied = getNoteOccupiedRange({ ...note, x: note.x - advance }, radius);
+    return range.left <= occupied.right && occupied.left <= range.right;
+  });
 }
 
 function spawnParticles(x, y, color, count = 15) {
   for (let i = 0; i < count; i++) {
     const angle = Math.random() * Math.PI * 2;
     const speed = Math.random() * 250 + 100;
-    const size = Math.random() * 6 + 3; 
-    
+    const size = Math.random() * 6 + 3;
+
     particles.push({
       x, y,
       vx: Math.cos(angle) * speed,
@@ -382,31 +1339,131 @@ function spawnParticles(x, y, color, count = 15) {
       life: 1.0,
       color,
       size,
-      rotation: Math.random() * Math.PI 
+      rotation: Math.random() * Math.PI
     });
   }
 }
 
-function judge(lane) {
+function judge(lane, inputTime = getInputGameTime()) {
   if (!round.running || round.paused || round.gameOver) return;
-  const judgeX = getJudgeLineX();
-  const near = findNearestNote(lane);
-  console.log(`[INPUT] lane=${lane} near=${near ? 'Y' : 'N'}`);
-  if (!near) return;
-  const dist = Math.abs(near.x - judgeX);
-  if (dist > NEAR_RANGE) return;
-  
-  const y = getLaneY(lane);
+  // 카운트다운 중에는 키 입력 판정 무시
+  if (round.countdown > 0) return;
 
-  if (dist <= JUDGE_TOLERANCE) {
-    near.hit = true; round.success += 1;
-    spawnParticles(judgeX, y, '#f0c674', 20); 
-  } else {
-    near.hit = true; round.fail += 1;
-    spawnParticles(judgeX, y, '#f85149', 12); 
-    if (round.fail >= FAIL_LIMIT) { endGame(false); return; }
+  const judgeX = getJudgeLineX();
+
+  // [일반 노트 판정]
+  const match = findNearestNote(lane, inputTime);
+  if (!match) return;
+
+  const { note: near, delta } = match;
+  if (match.note.long) {
+    if (match.note.holding || round.activeLongNotes[lane]) return;
+    match.note.holding = true;
+    match.note.headGrade = getGradeFromTiming(delta);
+    match.note.holdStartedAt = inputTime;
+    round.activeLongNotes[lane] = match.note;
+    addFloatingText(match.note.headGrade.toUpperCase(), getGradeColor(match.note.headGrade), judgeX + 20, getLaneY(lane));
+    return;
   }
+  const grade = getGradeFromTiming(delta);
+  near.judged = true;
+  near.visualResult = 'success';
+  near.visualRemoveAfter = round.elapsedTime + 0.08;
+  commitJudgement(grade);
+  triggerShipMotion('success');
+  const y = getLaneY(lane);
+  const colors = { phantom: '#00f0ff', dodge: '#3fb950', graze: '#f97316' };
+  const effects = { phantom: 30, dodge: 15, graze: 5 };
+  spawnParticles(judgeX, y, colors[grade], effects[grade]);
+  addFloatingText(grade.toUpperCase(), colors[grade], judgeX + 20, y);
   updateUI();
+}
+
+function getGradeFromTiming(deltaSeconds) {
+  if (deltaSeconds > JUDGE_WINDOWS_SECONDS.graze) return null;
+  if (deltaSeconds <= JUDGE_WINDOWS_SECONDS.phantom) return 'phantom';
+  if (deltaSeconds <= JUDGE_WINDOWS_SECONDS.dodge) return 'dodge';
+  return 'graze';
+}
+function getGradeColor(grade) {
+  return { phantom: '#00f0ff', dodge: '#3fb950', graze: '#f97316' }[grade];
+}
+function getComboMultiplier() {
+  const steps = Math.floor(round.combo / SCORE_RULES.COMBO_STEP_EVERY);
+  return Math.min(SCORE_RULES.COMBO_MAX_MULTIPLIER,
+    SCORE_RULES.COMBO_BASE_MULTIPLIER + steps * SCORE_RULES.COMBO_STEP_MULTIPLIER);
+}
+function addJudgementScore(baseScore) {
+  round.judgementScore += baseScore * getComboMultiplier();
+  refreshTotalScore();
+}
+function commitJudgement(grade) {
+  round.combo += 1;
+  round.maxCombo = Math.max(round.maxCombo, round.combo);
+  round.judgements[grade] += 1;
+  round.success += 1;
+  addJudgementScore(SCORE_CONFIG[grade.toUpperCase()]);
+}
+function refreshTotalScore() {
+  round.score = round.judgementScore + round.bossHitScore + round.survivalBonus + round.bossBonus;
+}
+function formatScore(value) {
+  return Math.round(value).toLocaleString();
+}
+function registerMiss(note, text = 'HIT') {
+  if (note.hit || note.judged) return false;
+  const bossAttack = !!note.bossHazard;
+  note.judged = true;
+  note.visualResult = 'miss';
+  note.visualRemoveAfter = round.elapsedTime + (bossAttack ? 0.26 : 0.18);
+  note.holding = false;
+  if (round.activeLongNotes[note.lane] === note) round.activeLongNotes[note.lane] = null;
+  round.fail = Math.min(FAIL_LIMIT, round.fail + (bossAttack ? 3 : 2));
+  round.combo = 0;
+  triggerShipMotion('hit');
+  shieldImpactAt[note.lane] = performance.now() / 1000;
+  shipImpactAt = performance.now() / 1000;
+  spawnParticles(getJudgeLineX(), getLaneY(note.lane), bossAttack ? '#ff536b' : '#f85149', bossAttack ? 26 : 12);
+  if (bossAttack) spawnParticles(48 + SHIP_MOTION.width / 2, canvas.height * 0.60, '#ff536b', 20);
+  addFloatingText(bossAttack ? 'CRASH' : text, bossAttack ? '#ff536b' : '#f85149', getJudgeLineX() + 20, getLaneY(note.lane));
+  if (bossAttack) stopPlanetAttacksAfterCrash(note);
+  if (round.fail >= FAIL_LIMIT) endGame();
+  updateUI();
+  return true;
+}
+function finishLongNote(note, tailTimingDelta, released) {
+  if (note.hit || note.judged || !note.long || !note.holding) return;
+  note.holding = false;
+  if (round.activeLongNotes[note.lane] === note) round.activeLongNotes[note.lane] = null;
+  const tailGrade = released
+    ? getGradeFromTiming(tailTimingDelta / LONG_NOTE_RULES.RELEASE_WINDOW_MULTIPLIER) : null;
+  if (!tailGrade) {
+    registerMiss(note, 'HIT');
+    return;
+  }
+  note.judged = true;
+  note.visualResult = 'success';
+  note.visualRemoveAfter = round.elapsedTime + 0.08;
+  const order = { phantom: 0, dodge: 1, graze: 2 };
+  const grade = order[note.headGrade] >= order[tailGrade] ? note.headGrade : tailGrade;
+  const y = getLaneY(note.lane);
+  const color = getGradeColor(tailGrade);
+  addFloatingText(`TAIL ${tailGrade.toUpperCase()}`, color, getJudgeLineX() + 20, y - 18);
+  commitJudgement(grade);
+  triggerShipMotion('success');
+  addFloatingText(grade.toUpperCase(), getGradeColor(grade), getJudgeLineX() + 20, y + 12);
+  updateUI();
+}
+function releaseLane(lane, inputTime = getInputGameTime()) {
+  if (!round.running || round.paused || round.countdown > 0) return;
+  const note = round.activeLongNotes[lane];
+  if (!note || note.hit || !note.holding) {
+    round.activeLongNotes[lane] = null;
+    return;
+  }
+  const tailTargetTime = Number.isFinite(note.tailTargetTime)
+    ? note.tailTargetTime : note.targetHitTime + note.durationSeconds;
+  finishLongNote(note, Math.abs(inputTime - tailTargetTime), true);
 }
 
 function loop(now) {
@@ -416,13 +1473,29 @@ function loop(now) {
   }
   const dt = Math.min((now - round.lastTime) / 1000, 0.1);
   round.lastTime = now;
-  round.timeLeft -= dt;
-  if (round.timeLeft <= 0) {
-    round.timeLeft = 0; endGame(true); render(); return;
+  const judgeX = getJudgeLineX(); // 최상단에서 먼저 초기화하여 보스 돌진 및 판정 로직에서 TDZ 에러 방지
+
+  // 재개 카운트다운 처리: 카운트다운 중에는 노트 이동과 게임 시간 정지
+  if (round.countdown > 0) {
+    round.countdown -= dt;
+    if (round.countdown <= 0) {
+      round.countdown = 0;
+    }
+    render();
+    return;
   }
 
+  round.elapsedTime += dt;
+  round.survivalBonus += dt * SCORE_RULES.SURVIVAL_PER_SECOND;
+  refreshTotalScore();
+
+  // 시간이 지날수록 점진적으로 속도 증가 (4초마다 0.1배율 상승)
+  NOTE_SPEED += SPEED_ACCEL_PER_SEC * dt;
+  updateTempoClock(dt);
+  updateBeatClock();
+
   lastBgLineSpawn += dt * 1000;
-  if (lastBgLineSpawn > 100) { 
+  if (lastBgLineSpawn > 100) {
     lastBgLineSpawn = 0;
     bgLines.push({
       x: canvas.width + 50,
@@ -436,30 +1509,207 @@ function loop(now) {
   for (const line of bgLines) { line.x -= line.speed * dt; }
   bgLines = bgLines.filter(l => l.x + l.length > 0);
 
-  round.spawnAcc += dt * 1000;
-  while (round.spawnAcc >= SPAWN_INTERVAL) {
-    const jitter = (Math.random() * 2 - 1) * SPAWN_JITTER;
-    let nextInterval = SPAWN_INTERVAL + jitter;
-    if (nextInterval < MIN_SPAWN_INTERVAL) nextInterval = MIN_SPAWN_INTERVAL;
-    round.spawnAcc -= nextInterval;
-    
-    const lane = Math.random() < 0.5 ? 0 : 1;
-    round.notes.push({ lane, x: NOTE_START_X, hit: false });
+  // [보스 이벤트 스폰 및 업데이트]
+  const bossPending = !boss.active && round.elapsedTime >= round.nextBossTime;
+  if (bossPending) {
+    round.pendingSpawn = null;
+    round.activePattern = null;
+    round.lastSpawnLane = null;
+    round.lastSpawnTargetTime = null;
+    round.lastSpawnTargetBeat = null;
+  }
+  if (bossPending && round.notes.every(n => n.hit)) {
+    boss.active = true;
+    boss.state = 'warn';
+    boss.timer = BOSS_CONFIG.WARN_DURATION;
+    boss.x = BOSS_CONFIG.PASS_START_X;
+    boss.y = ((canvas.height || 450) * LANE_TOP_Y + (canvas.height || 450) * LANE_BOTTOM_Y) / 2;
+    boss.hazardPatternStarted = false;
+    boss.hazardStage = -1;
   }
 
-  for (const n of round.notes) { n.x -= NOTE_SPEED * dt; }
-
-  const judgeX = getJudgeLineX();
-  for (const n of round.notes) {
-    if (n.hit) continue;
-    if (n.x < judgeX - JUDGE_TOLERANCE) {
-      n.hit = true; round.fail += 1;
-      spawnParticles(judgeX, getLaneY(n.lane), '#f85149', 12);
-      if (round.fail >= FAIL_LIMIT) { endGame(false); break; }
+  if (boss.active) {
+    if (boss.state === 'warn') {
+      boss.timer -= dt;
+      if (boss.timer <= 0) {
+        startPlanetHazards(dt);
+      }
+    } else if (boss.state === 'hazards') {
+      boss.x = Math.max(BOSS_CONFIG.PASS_END_X, boss.x - getPlanetPassSpeed() * dt);
+      if (!round.activePattern && !round.pendingSpawn) {
+        if (boss.hazardStage + 1 < BOSS_CONFIG.HAZARD_STAGES.length) {
+          startPlanetHazardStage(dt, boss.hazardStage + 1);
+        } else if (boss.x <= BOSS_CONFIG.PASS_END_X) {
+          handlePlanetPass();
+        }
+      }
+    } else if (boss.state === 'crash-pass') {
+      const timeLeft = Math.max(boss.timer, dt);
+      const speedToExit = Math.max(
+        BOSS_CONFIG.CRASH_PASS_SPEED,
+        (boss.x - BOSS_CONFIG.PASS_END_X) / timeLeft,
+      );
+      boss.x = Math.max(BOSS_CONFIG.PASS_END_X, boss.x - speedToExit * dt);
+      boss.timer -= dt;
+      if (boss.timer <= 0 || boss.x <= BOSS_CONFIG.PASS_END_X) {
+        finishPlanetCrash();
+      }
     }
   }
 
-  round.notes = round.notes.filter(n => n.x > -100);
+  // 행성 경고/통과 중에는 기본 패턴을 멈추고, 지정된 이벤트 위험 패턴만 생성한다.
+  const planetHazardsActive = boss.active && boss.state === 'hazards';
+  if ((!boss.active && !bossPending) || planetHazardsActive) {
+    while (true) {
+      if (!round.activePattern) {
+        if (planetHazardsActive) break;
+        round.activePattern = chooseLanePattern();
+        round.lastPatternId = round.activePattern.id;
+        const travelTime = getTravelTime(getNoteStartX() - getJudgeLineX());
+        const patternRest = getSpawnInterval() * RHYTHM_RULES.PATTERN_GAP_SCALE / 1000;
+        // 다음 프레임 경계 전에 노트가 화면 밖에서 생성되도록 한 프레임 선행 스케줄한다.
+        const earliestHitBeat = getBeatAtTime(round.elapsedTime + dt + travelTime);
+        const nextRestBeat = round.lastSpawnTargetTime === null ? 0
+          : getBeatAtTime(round.lastSpawnTargetTime + patternRest);
+        const nextHitBeat = Math.max(earliestHitBeat, nextRestBeat);
+        round.activePattern.nextHitBeat = alignToRhythmGrid(nextHitBeat);
+      }
+      if (!round.pendingSpawn) {
+        const step = round.activePattern.steps[round.activePattern.index];
+        const isLong = !step.simultaneous && (step.longMode === 'long' ||
+          (step.longMode !== 'normal' && Math.random() < PATTERN_RULES.LONG_NOTE_CHANCE));
+        round.pendingSpawn = {
+          long: isLong,
+          durationBeats: isLong ? chooseLongNoteDurationBeats() : 0,
+          simultaneous: step.simultaneous,
+          laneOffset: step.laneOffset,
+          gapTicks: step.gapTicks,
+          preferredLane: round.activePattern.baseLane ^ step.laneOffset,
+          targetBeat: round.activePattern.nextHitBeat,
+        };
+      }
+      const { long, preferredLane, laneOffset } = round.pendingSpawn;
+      let lane = preferredLane;
+      let spawnPlan = findSafeSpawnPlan(round.pendingSpawn, lane, dt);
+      if (!spawnPlan && round.activePattern.index === 0) {
+        const alternateLane = 1 - preferredLane;
+        const alternatePlan = findSafeSpawnPlan(round.pendingSpawn, alternateLane, dt);
+        if (alternatePlan) {
+          lane = alternateLane;
+          spawnPlan = alternatePlan;
+          round.activePattern.baseLane = lane ^ laneOffset;
+          round.pendingSpawn.preferredLane = lane;
+        }
+      }
+      if (!spawnPlan) {
+        const earliestBeat = getBeatAtTime(round.elapsedTime +
+          dt + getTravelTime(getNoteStartX() - getJudgeLineX()));
+        round.pendingSpawn.targetBeat = alignToRhythmGrid(Math.max(
+          round.pendingSpawn.targetBeat + getRhythmGridBeats(), earliestBeat));
+        break;
+      }
+      if (round.elapsedTime + dt + 1e-9 < spawnPlan.spawnAtTime) break;
+      let launchX = spawnPlan.startX;
+
+      if (!spawnPlan.lanes.every(spawnLane => canSpawnAtFramePosition(
+        spawnLane, long, spawnPlan.longLength, launchX, dt))) {
+        if (!round.pendingSpawn.simultaneous && round.activePattern.index === 0) {
+          const alternateLane = 1 - lane;
+          const alternatePlan = findSafeSpawnPlan(round.pendingSpawn, alternateLane, dt);
+          if (alternatePlan && round.elapsedTime + dt + 1e-9 >= alternatePlan.spawnAtTime) {
+            const alternateX = alternatePlan.startX;
+            if (alternatePlan.lanes.every(spawnLane => canSpawnAtFramePosition(
+              spawnLane, long, alternatePlan.longLength, alternateX, dt))) {
+              lane = alternateLane;
+              spawnPlan = alternatePlan;
+              launchX = alternateX;
+              round.activePattern.baseLane = lane ^ laneOffset;
+              round.pendingSpawn.preferredLane = lane;
+            }
+          }
+        }
+      }
+      if (!spawnPlan.lanes.every(spawnLane => canSpawnAtFramePosition(
+        spawnLane, long, spawnPlan.longLength, launchX, dt))) {
+        // 박자 위치는 유지하면서 다음 그리드 칸으로 옮기고, 실제 프레임 좌표에서 다시 검사한다.
+        round.pendingSpawn.targetBeat = alignToRhythmGrid(
+          spawnPlan.targetHitBeat + getRhythmGridBeats());
+        break;
+      }
+      const simultaneousGroupId = round.pendingSpawn.simultaneous
+        ? round.nextSimultaneousGroupId++ : null;
+      for (const spawnLane of spawnPlan.lanes) {
+        round.notes.push({ lane: spawnLane, x: launchX, prevX: launchX, hit: false, long,
+          judged: false,
+          durationBeats: long ? round.pendingSpawn.durationBeats : 0,
+          durationSeconds: long ? spawnPlan.longDurationSeconds : 0,
+          length: long ? spawnPlan.longLength : 0, holding: false,
+          simultaneous: !!round.pendingSpawn.simultaneous,
+          simultaneousGroupId,
+          bossHazard: round.activePattern.type === 'planet-hazard-sequence',
+          targetHitBeat: spawnPlan.targetHitBeat,
+          targetHitTime: spawnPlan.targetHitTime,
+          tailTargetBeat: spawnPlan.tailTargetBeat,
+          tailTargetTime: spawnPlan.tailTargetTime,
+          spawnedAtTime: round.elapsedTime });
+      }
+      round.lastSpawnLane = round.pendingSpawn.simultaneous ? null : lane;
+      round.lastSpawnTargetTime = spawnPlan.targetHitTime;
+      round.lastSpawnTargetBeat = spawnPlan.targetHitBeat;
+      round.pendingSpawn = null;
+      round.activePattern.index += 1;
+      if (round.activePattern.index >= round.activePattern.steps.length) {
+        round.activePattern = null;
+      } else {
+        const nextStep = round.activePattern.steps[round.activePattern.index];
+        round.activePattern.nextHitBeat = spawnPlan.targetHitBeat + nextStep.gapTicks * getRhythmGridBeats();
+      }
+    }
+  } else {
+    round.pendingSpawn = null;
+    round.activePattern = null;
+    if (boss.active) round.lastSpawnLane = null;
+  }
+
+  for (const n of round.notes) {
+    if (n.spawnedAtTime === round.elapsedTime) {
+      n.prevX = n.x;
+      continue;
+    }
+    n.prevX = n.x;
+    n.x -= NOTE_SPEED * dt;
+  }
+
+  for (const n of round.notes) {
+    if (n.hit) continue;
+    if (n.judged) {
+      const contactCleared = n.long
+        ? n.x + n.length < judgeX - 20
+        : n.x < judgeX - NOTE_W / 2 - 20;
+      if (contactCleared && round.elapsedTime >= n.visualRemoveAfter) n.hit = true;
+      continue;
+    }
+    if (n.long && n.holding) {
+      const tailTargetTime = Number.isFinite(n.tailTargetTime)
+        ? n.tailTargetTime : n.targetHitTime + n.durationSeconds;
+      if (round.elapsedTime > tailTargetTime + JUDGE_WINDOWS_SECONDS.graze * LONG_NOTE_RULES.RELEASE_WINDOW_MULTIPLIER) {
+        finishLongNote(n, Infinity, false);
+      }
+      continue;
+    }
+    const targetTime = Number.isFinite(n.targetHitTime)
+      ? n.targetHitTime : round.elapsedTime + (n.x - judgeX) / NOTE_SPEED;
+    if (round.elapsedTime > targetTime + JUDGE_WINDOWS_SECONDS.graze) {
+      registerMiss(n);
+      if (round.fail >= FAIL_LIMIT) break;
+    }
+  }
+
+  for (const ft of floatingTexts) { ft.elapsed += dt; }
+  floatingTexts = floatingTexts.filter(ft => ft.elapsed < ft.duration);
+
+  const noteCleanupX = Math.min(-100, judgeX - getJudgeDistances().graze);
+  round.notes = round.notes.filter(n => !n.hit || n.x > noteCleanupX);
 
   particles = particles.filter(p => {
     p.x += p.vx * dt;
@@ -467,7 +1717,7 @@ function loop(now) {
     p.vx *= 0.95;
     p.vy *= 0.95;
     p.life -= dt * 2.5;
-    p.rotation += dt * 10; 
+    p.rotation += dt * 10;
     return p.life > 0;
   });
 
@@ -478,20 +1728,48 @@ function render() {
   const W = canvas.width, H = canvas.height;
   const judgeX = getJudgeLineX();
   const judgeTopY = H * JUDGE_LINE_START_Y;
-  
-  // 중앙선은 남은 플레이 영역(20%~100%)의 중앙인 60% 지점
-  const playAreaMidY = H * 0.60; 
+  const playAreaMidY = H * 0.60;
+  const judgeDistances = getJudgeDistances();
 
+  // 배경 지우기 및 사이버네틱 딥 베이스
   ctx.clearRect(0, 0, W, H);
-  ctx.fillStyle = '#0d1117';
-  ctx.fillRect(0, 0, W, H);
+  if (isImageReady(gameAssets.background)) {
+    // Cover the 16:9 logical canvas while preserving the square source aspect ratio.
+    const image = gameAssets.background;
+    const sourceAspect = image.naturalWidth / image.naturalHeight;
+    const canvasAspect = W / H;
+    let sx = 0, sy = 0, sw = image.naturalWidth, sh = image.naturalHeight;
+    if (sourceAspect > canvasAspect) {
+      sw = image.naturalHeight * canvasAspect;
+      sx = (image.naturalWidth - sw) / 2;
+    } else {
+      sh = image.naturalWidth / canvasAspect;
+      sy = (image.naturalHeight - sh) / 2;
+    }
+    ctx.drawImage(image, sx, sy, sw, sh, 0, 0, W, H);
+  } else {
+    ctx.fillStyle = '#080b10';
+    ctx.fillRect(0, 0, W, H);
+  }
+  renderPlanetLayer();
 
-  // 1. 배경 스크롤 라인
+  // 1. 은은한 배경 그리드 라인 (네온 SF 분위기)
   ctx.save();
-  ctx.strokeStyle = '#58a6ff'; 
-  ctx.lineWidth = 2;
+  ctx.strokeStyle = 'rgba(0, 240, 255, 0.04)';
+  ctx.lineWidth = 1;
+  const gridGap = 40;
+  for (let x = 0; x < W; x += gridGap) {
+    ctx.beginPath(); ctx.moveTo(x, judgeTopY); ctx.lineTo(x, H); ctx.stroke();
+  }
+  for (let y = judgeTopY; y < H; y += gridGap) {
+    ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke();
+  }
+
+  // 배경 스크롤 광원 라인
+  ctx.strokeStyle = '#00f0ff';
+  ctx.lineWidth = 1.5;
   for (const line of bgLines) {
-    ctx.globalAlpha = line.alpha;
+    ctx.globalAlpha = line.alpha * 0.6;
     ctx.beginPath();
     ctx.moveTo(line.x, line.y);
     ctx.lineTo(line.x + line.length, line.y);
@@ -499,124 +1777,432 @@ function render() {
   }
   ctx.restore();
 
-  // 2. 레인 배경 구분 (하단 절반인 60% 지점부터 어둡게)
-  ctx.fillStyle = 'rgba(17, 22, 29, 0.5)'; 
+  // 2. 레인 배경 구분 (하단 레인 대비감 조성)
+  ctx.fillStyle = 'rgba(13, 20, 32, 0.45)';
   ctx.fillRect(0, playAreaMidY, W, H - playAreaMidY);
 
-  // 3. 가로 분할선 (진짜 중앙 60%)
-  ctx.strokeStyle = '#30363d';
-  ctx.lineWidth = 2;
-  ctx.beginPath(); ctx.moveTo(0, playAreaMidY); ctx.lineTo(W, playAreaMidY); ctx.stroke();
+  // 같은 동시치기 그룹의 두 노트만 낮은 대비의 연결선으로 표시한다.
+  const simultaneousGroups = new Map();
+  for (const note of round.notes) {
+    if (note.hit || note.simultaneousGroupId === null || note.simultaneousGroupId === undefined) continue;
+    if (!simultaneousGroups.has(note.simultaneousGroupId)) simultaneousGroups.set(note.simultaneousGroupId, []);
+    simultaneousGroups.get(note.simultaneousGroupId).push(note);
+  }
+  ctx.save();
+  ctx.globalAlpha = 0.38;
+  ctx.strokeStyle = '#d9f8ff';
+  ctx.lineWidth = 1.5;
+  ctx.shadowColor = '#8cecff';
+  ctx.shadowBlur = 2.5;
+  for (const pair of simultaneousGroups.values()) {
+    if (pair.length !== 2 || pair[0].lane === pair[1].lane) continue;
+    const x = (pair[0].x + pair[1].x) / 2;
+    ctx.globalAlpha = 0.34 + 0.07 * (0.5 + 0.5 * Math.sin(round.elapsedTime * 7));
+    ctx.beginPath();
+    ctx.moveTo(x, getLaneY(0));
+    ctx.lineTo(x, getLaneY(1));
+    ctx.stroke();
+  }
+  ctx.restore();
 
-  // ==========================================
-  // 4. 판정선 배경 띠 및 메인 라인 (20% ~ 100% 끝까지 확장)
-  // ==========================================
-  ctx.fillStyle = 'rgba(240, 198, 116, 0.10)';
-  ctx.fillRect(judgeX - JUDGE_TOLERANCE, judgeTopY, JUDGE_TOLERANCE * 2, H - judgeTopY);
-
-  ctx.strokeStyle = '#f0c674'; 
-  ctx.lineWidth = 3;
-  ctx.beginPath(); 
-  ctx.moveTo(judgeX, judgeTopY); 
-  ctx.lineTo(judgeX, H); // 캔버스 맨 아래까지
-  ctx.stroke();
-
-  // D / K 안내 텍스트
-  ctx.fillStyle = '#6e7681'; 
-  ctx.font = 'bold 20px system-ui, sans-serif';
-  ctx.textAlign = 'right';
-  ctx.textBaseline = 'middle';
-  ctx.fillText('D', judgeX - 12, H * LANE_TOP_Y);
-  ctx.fillText('K', judgeX - 12, H * LANE_BOTTOM_Y);
-
-  // 레인별 점선 가이드라인
-  ctx.strokeStyle = '#21262d';
+  // 3. 레인 분할선 (네온 엣지)
+  ctx.save();
+  ctx.strokeStyle = 'rgba(0, 240, 255, 0.2)';
   ctx.lineWidth = 1;
-  ctx.setLineDash([4, 4]);
+  ctx.beginPath(); ctx.moveTo(0, playAreaMidY); ctx.lineTo(W, playAreaMidY); ctx.stroke();
+  ctx.restore();
+
+  // ==========================================
+  // 4. 판정선 (네온 빔 & 세부 구역 시인성 강화)
+  // ==========================================
+  // 실제 판정 시간 창에 현재 속도를 곱한 화면상 구역
+  ctx.fillStyle = 'rgba(249, 115, 22, 0.04)';
+  ctx.fillRect(judgeX - judgeDistances.graze, judgeTopY, judgeDistances.graze * 2, H - judgeTopY);
+
+  // DODGE 시간 구역
+  ctx.fillStyle = 'rgba(63, 185, 80, 0.05)';
+  ctx.fillRect(judgeX - judgeDistances.dodge, judgeTopY, judgeDistances.dodge * 2, H - judgeTopY);
+
+  // PHANTOM 시간 구역
+  ctx.fillStyle = 'rgba(0, 240, 255, 0.09)';
+  ctx.fillRect(judgeX - judgeDistances.phantom, judgeTopY, judgeDistances.phantom * 2, H - judgeTopY);
+
+  // 두 레인의 원형 방패 노드가 하나의 고정 판정 X를 공유한다.
+  renderShieldNodes(performance.now() / 1000);
+
+  // D / K 레인 키 뱃지 (사이버네틱 인디케이터)
+  const drawKeyBadge = (key, y, activeColor) => {
+    ctx.save();
+    const bx = judgeX - 52, by = y - 13, bw = 20, bh = 26;
+    ctx.fillStyle = 'rgba(22, 27, 34, 0.9)';
+    ctx.strokeStyle = 'rgba(255, 209, 102, 0.6)';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.roundRect ? ctx.roundRect(bx, by, bw, bh, 4) : ctx.rect(bx, by, bw, bh);
+    ctx.fill(); ctx.stroke();
+
+    ctx.fillStyle = '#ffd166';
+    ctx.font = 'bold 15px system-ui, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(key, bx + bw / 2, y + 1);
+    ctx.restore();
+  };
+  drawKeyBadge('D', H * LANE_TOP_Y, '#00f0ff');
+  drawKeyBadge('K', H * LANE_BOTTOM_Y, '#00ff88');
+
+  // 레인 가이드라인
+  ctx.save();
+  ctx.strokeStyle = 'rgba(255, 255, 255, 0.08)';
+  ctx.lineWidth = 1;
+  ctx.setLineDash([6, 6]);
   ctx.beginPath();
   ctx.moveTo(judgeX, H * LANE_TOP_Y); ctx.lineTo(W, H * LANE_TOP_Y);
   ctx.moveTo(judgeX, H * LANE_BOTTOM_Y); ctx.lineTo(W, H * LANE_BOTTOM_Y);
   ctx.stroke();
-  ctx.setLineDash([]); 
-
-  // ==========================================
-  // 5. 상단 패널 (목숨 UI)
-  // ==========================================
-  ctx.save();
-  ctx.fillStyle = 'rgba(22, 27, 34, 0.9)';
-  ctx.fillRect(0, 0, W, judgeTopY);
-  ctx.strokeStyle = '#30363d';
-  ctx.lineWidth = 1;
-  ctx.beginPath(); ctx.moveTo(0, judgeTopY); ctx.lineTo(W, judgeTopY); ctx.stroke();
-  
-  const failColor = round.fail === 0 ? '#3fb950' : round.fail === 1 ? '#e3b341' : '#f85149';
-  ctx.font = 'bold 22px system-ui, sans-serif';
-  ctx.textAlign = 'left'; 
-  ctx.textBaseline = 'middle';
-  ctx.fillStyle = failColor;
-  
-  ctx.fillText(`실패: ${round.fail} / ${FAIL_LIMIT}`, 20, judgeTopY / 2);
-  
-  for (let i = 0; i < FAIL_LIMIT; i++) {
-    const isLost = i < round.fail;
-    ctx.beginPath();
-    ctx.arc(W - 30 - (i * 24), judgeTopY / 2, 8, 0, Math.PI * 2);
-    if (isLost) { ctx.strokeStyle = failColor; ctx.lineWidth = 2; ctx.stroke(); }
-    else { ctx.fillStyle = failColor; ctx.fill(); }
-  }
+  ctx.setLineDash([]);
   ctx.restore();
 
-  // 7. 노트 그리기
-  for (const n of round.notes) {
-    if (n.hit) continue;
-    const y = getLaneY(n.lane); 
-    ctx.fillStyle = n.lane === 0 ? '#58a6ff' : '#3fb950';
-    ctx.fillRect(n.x - NOTE_W / 2, y - NOTE_H / 2, NOTE_W, NOTE_H);
+  // ==========================================
+  // 5. 상단 HUD 패널 (왼쪽 상단 목숨, 중앙 콤보)
+  // ==========================================
+  ctx.save();
+  ctx.fillStyle = 'rgba(10, 14, 20, 0.92)';
+  ctx.fillRect(0, 0, W, judgeTopY);
+  ctx.strokeStyle = 'rgba(0, 240, 255, 0.25)';
+  ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.moveTo(0, judgeTopY); ctx.lineTo(W, judgeTopY); ctx.stroke();
+
+  // [요구사항 4] 왼쪽 상단 목숨 표시: 실패 횟수 숫자 없이 기존 도형과 색상으로만 표현
+  const lifeStartX = 24;
+  const lifeY = judgeTopY / 2;
+  const shieldWidth = 28;
+  const shieldHeight = 14;
+  const shieldGap = 10;
+
+  // 목숨 라벨
+  ctx.font = 'bold 11px system-ui, sans-serif';
+  ctx.fillStyle = '#8b949e';
+  ctx.textAlign = 'left';
+  ctx.textBaseline = 'bottom';
+  ctx.fillText('SHIELD CELL', lifeStartX, lifeY - 9);
+
+  for (let i = 0; i < 3; i++) {
+    const sx = lifeStartX + i * (shieldWidth + shieldGap);
+    const sy = lifeY - 4;
+
+    ctx.save();
+    ctx.fillStyle = 'rgba(22, 27, 34, 0.92)';
+    ctx.beginPath();
+    ctx.roundRect ? ctx.roundRect(sx, sy, shieldWidth, shieldHeight, 3) : ctx.rect(sx, sy, shieldWidth, shieldHeight);
+    ctx.fill();
+    for (let half = 0; half < 2; half++) {
+      const halfIndex = i * 2 + half;
+      const consumed = halfIndex < round.fail;
+      const halfX = sx + 1 + half * (shieldWidth / 2);
+      ctx.fillStyle = consumed ? 'rgba(248, 81, 73, 0.24)' : '#00d9c6';
+      if (!consumed) { ctx.shadowColor = '#00f0ff'; ctx.shadowBlur = 6; }
+      ctx.fillRect(halfX, sy + 1, shieldWidth / 2 - 1, shieldHeight - 2);
+      ctx.shadowBlur = 0;
+    }
+    ctx.strokeStyle = 'rgba(224, 255, 255, 0.78)'; ctx.lineWidth = 1.4;
+    ctx.beginPath();
+    ctx.roundRect ? ctx.roundRect(sx, sy, shieldWidth, shieldHeight, 3) : ctx.rect(sx, sy, shieldWidth, shieldHeight);
+    ctx.stroke();
+    ctx.strokeStyle = 'rgba(10, 14, 20, 0.8)'; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(sx + shieldWidth / 2, sy + 2); ctx.lineTo(sx + shieldWidth / 2, sy + shieldHeight - 2); ctx.stroke();
+    ctx.restore();
   }
 
-  // 8. 판정 파티클 이펙트
+  // [요구사항 3] 인게임 화면 상단 중앙 콤보 표시
+  if (round.combo > 0) {
+    ctx.save();
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+
+    // 콤보 숫자
+    ctx.font = '900 28px system-ui, sans-serif';
+    ctx.fillStyle = '#00f0ff';
+    ctx.shadowColor = '#00f0ff';
+    ctx.shadowBlur = 12;
+    ctx.fillText(round.combo, W / 2, judgeTopY / 2 - 7);
+
+    // COMBO 텍스트
+    ctx.font = 'bold 10px system-ui, sans-serif';
+    ctx.fillStyle = '#79c0ff';
+    ctx.shadowBlur = 6;
+    ctx.fillText('COMBO', W / 2, judgeTopY / 2 + 16);
+    ctx.restore();
+  }
+
+  // 박자 점등과 Web Audio 틱은 같은 BPM 시계를 사용한다.
+  const beatIndex = Math.floor(round.musicalBeats);
+  const beatPhase = round.musicalBeats - beatIndex;
+  ctx.save();
+  ctx.textAlign = 'right';
+  ctx.textBaseline = 'middle';
+  ctx.font = 'bold 9px system-ui, sans-serif';
+  ctx.fillStyle = '#8b949e';
+  ctx.fillText(`BPM ${getEffectiveBpm().toFixed(0)}`, W - 20, judgeTopY / 2 - 10);
+  for (let beat = 0; beat < RHYTHM_RULES.BEATS_PER_BAR; beat++) {
+    const x = W - 34 - beat * 20;
+    const active = beat === beatIndex % RHYTHM_RULES.BEATS_PER_BAR;
+    const radius = active ? 4 + (1 - beatPhase) * 2 : 3;
+    ctx.beginPath(); ctx.arc(x, judgeTopY / 2 + 12, radius, 0, Math.PI * 2);
+    ctx.fillStyle = active ? (beat === 0 ? '#ffd166' : '#00f0ff') : 'rgba(139, 148, 158, 0.4)';
+    ctx.fill();
+  }
+  ctx.restore();
+  ctx.restore();
+
+  // ==========================================
+  // 6. 노트 렌더링 (고대비 네온 에너지 코어)
+  // ==========================================
+  for (const n of round.notes) {
+    if (n.hit) continue;
+    const y = getLaneY(n.lane);
+    const nx = n.x - NOTE_W / 2;
+    const ny = y - NOTE_H / 2;
+
+    ctx.save();
+    if (n.long) {
+      const tailX = n.x + n.length;
+      const tailWarningDistance = NOTE_SPEED * LONG_NOTE_RULES.TAIL_WARNING_SECONDS;
+      const tailDistance = Math.abs(tailX - judgeX);
+      const tailNear = tailX <= judgeX + tailWarningDistance && tailX >= judgeX - getLongTailWindow();
+      const tailPulse = tailNear ? 0.55 + 0.45 * Math.abs(Math.sin(round.elapsedTime * 18)) : 1;
+      const bodyStart = n.x + NOTE_W / 2;
+      const bodyEnd = tailX - 12;
+      const bodyGradient = ctx.createLinearGradient(bodyStart, y, bodyEnd, y);
+      const bodyColor = n.lane === 0 ? '0, 226, 255' : '45, 240, 165';
+      bodyGradient.addColorStop(0, `rgba(${bodyColor}, 0.78)`);
+      bodyGradient.addColorStop(1, `rgba(${bodyColor}, 0.08)`);
+      ctx.fillStyle = bodyGradient;
+      ctx.shadowColor = n.lane === 0 ? '#48eaff' : '#45f2ae'; ctx.shadowBlur = 6;
+      ctx.fillRect(bodyStart, ny + 8, Math.max(0, bodyEnd - bodyStart), NOTE_H - 16);
+      ctx.shadowBlur = 0;
+      if (isImageReady(gameAssets.meteor.note)) {
+        for (let fragmentX = bodyStart + 10; fragmentX < bodyEnd; fragmentX += 28) {
+          const fragmentAlpha = 0.5 + 0.3 * (0.5 + 0.5 * Math.sin((fragmentX - n.x) * 0.19));
+          ctx.globalAlpha = fragmentAlpha;
+          drawSpriteContain(gameAssets.meteor.note, fragmentX - 6, y - 6, 12, 12);
+          ctx.fillStyle = n.lane === 0 ? '#8df4ff' : '#a2ffd0';
+          ctx.globalAlpha = 0.56;
+          for (let dust = 0; dust < 2; dust++) {
+            const offset = (dust ? 1 : -1) * (4 + Math.abs(Math.sin((fragmentX - n.x) * 0.13 + dust) * 5));
+            ctx.beginPath(); ctx.arc(fragmentX + (dust ? 7 : -5), y + offset, dust ? 1.1 : 1.6, 0, Math.PI * 2); ctx.fill();
+          }
+        }
+        ctx.globalAlpha = 1;
+      }
+      const holdProgress = getLongHoldProgress(n);
+      const holdFillWidth = Math.max(0, (n.length - NOTE_W / 2) * holdProgress);
+      if (holdFillWidth > 0) {
+        const holdFill = ctx.createLinearGradient(
+          n.x + NOTE_W / 2, y, n.x + NOTE_W / 2 + holdFillWidth, y);
+        holdFill.addColorStop(0, 'rgba(255, 255, 255, 0.92)');
+        holdFill.addColorStop(0.72, n.lane === 0 ? 'rgba(150, 250, 255, 0.88)' : 'rgba(160, 255, 208, 0.88)');
+        holdFill.addColorStop(1, n.lane === 0 ? 'rgba(0, 240, 255, 0.16)' : 'rgba(0, 255, 136, 0.16)');
+        ctx.globalAlpha = 0.88;
+        ctx.fillStyle = holdFill;
+        ctx.shadowColor = n.lane === 0 ? '#b9f8ff' : '#baffdc';
+        ctx.shadowBlur = 4;
+        ctx.fillRect(n.x + NOTE_W / 2, ny + 7, holdFillWidth, NOTE_H - 14);
+      }
+      ctx.globalAlpha = 1;
+      ctx.shadowBlur = 0;
+      ctx.globalAlpha = tailPulse;
+      ctx.strokeStyle = tailNear ? '#ff737f' : '#ffe29a';
+      ctx.fillStyle = tailNear ? '#ff737f' : '#ffe29a';
+      ctx.shadowColor = ctx.strokeStyle; ctx.shadowBlur = tailNear ? 7 : 3;
+      ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.moveTo(tailX, y - 8); ctx.lineTo(tailX, y + 8); ctx.stroke();
+      ctx.beginPath(); ctx.arc(tailX, y, 3, 0, Math.PI * 2); ctx.fill();
+      ctx.globalAlpha = 1; ctx.shadowBlur = 0;
+    }
+    if (n.long && isImageReady(gameAssets.meteor.longHead)) {
+      drawSpriteContain(gameAssets.meteor.longHead, nx - 5, ny - 7, NOTE_W + 12, NOTE_H + 14);
+    } else if (isImageReady(gameAssets.meteor.note)) {
+      drawSpriteContain(gameAssets.meteor.note, nx, ny, NOTE_W, NOTE_H);
+    } else if (n.lane === 0) {
+      // 위쪽 레인: 사이버 시안 네온
+      ctx.shadowColor = '#00f0ff';
+      ctx.shadowBlur = 14;
+      ctx.fillStyle = '#00f0ff';
+      ctx.beginPath();
+      ctx.roundRect ? ctx.roundRect(nx, ny, NOTE_W, NOTE_H, 6) : ctx.rect(nx, ny, NOTE_W, NOTE_H);
+      ctx.fill();
+
+      // 밝은 내부 화이트 코어 (시인성 극대화)
+      ctx.shadowBlur = 0;
+      ctx.fillStyle = '#f0fbff';
+      ctx.beginPath();
+      ctx.roundRect ? ctx.roundRect(nx + 4, ny + 4, NOTE_W - 8, NOTE_H - 8, 4) : ctx.rect(nx + 4, ny + 4, NOTE_W - 8, NOTE_H - 8);
+      ctx.fill();
+    } else {
+      // 아래쪽 레인: 네온 에메랄드 그린
+      ctx.shadowColor = '#00ff88';
+      ctx.shadowBlur = 14;
+      ctx.fillStyle = '#00ff88';
+      ctx.beginPath();
+      ctx.roundRect ? ctx.roundRect(nx, ny, NOTE_W, NOTE_H, 6) : ctx.rect(nx, ny, NOTE_W, NOTE_H);
+      ctx.fill();
+
+      // 밝은 내부 화이트 코어
+      ctx.shadowBlur = 0;
+      ctx.fillStyle = '#f2fff8';
+      ctx.beginPath();
+      ctx.roundRect ? ctx.roundRect(nx + 4, ny + 4, NOTE_W - 8, NOTE_H - 8, 4) : ctx.rect(nx + 4, ny + 4, NOTE_W - 8, NOTE_H - 8);
+      ctx.fill();
+    }
+    ctx.restore();
+  }
+  renderShip(performance.now() / 1000);
+
+  // 행성 근접 통과 경고와 링의 위험 스트림 안내
+  if (boss.active) {
+    ctx.save();
+    const warning = boss.state === 'warn';
+    const crashing = boss.state === 'crash-pass';
+    ctx.fillStyle = warning ? '#ffcf70' : crashing ? '#ff687b' : '#9deaff';
+    ctx.shadowColor = ctx.fillStyle; ctx.shadowBlur = warning ? 10 : 5;
+    ctx.font = '900 15px system-ui, sans-serif';
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    const hazardLabel = round.activePattern?.stageLabel || 'PLANETARY CLOSE PASS';
+    const eventLabel = warning ? '⚠ PLANET CLOSE PASS — ASTEROID STREAM ⚠'
+      : crashing ? 'CRASH — GRAVITY FIELD IMPACT'
+        : boss.state === 'hazards' ? hazardLabel : 'PLANET PASS';
+    ctx.fillText(eventLabel, W / 2, judgeTopY + 20);
+    ctx.restore();
+  }
+
+  // 7. 파티클 이펙트
   for (const p of particles) {
     ctx.save();
     ctx.globalAlpha = Math.max(0, p.life);
     ctx.fillStyle = p.color;
-    
     ctx.translate(p.x, p.y);
     ctx.rotate(p.rotation);
     ctx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size);
-    
+    ctx.restore();
+  }
+
+  // 8. 판정 텍스트 연출 (0.5초 페이드아웃)
+  for (const ft of floatingTexts) {
+    const alpha = Math.max(0, 1 - (ft.elapsed / ft.duration));
+    ctx.save();
+    ctx.globalAlpha = alpha;
+    ctx.fillStyle = ft.color;
+    ctx.shadowColor = ft.color;
+    ctx.shadowBlur = 12;
+    ctx.font = 'bold 22px system-ui, sans-serif';
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(ft.text, ft.x, ft.y);
+    ctx.restore();
+  }
+
+  // ==========================================
+  // 9. [요구사항 5] 재개 시 3초 카운트다운 렌더링
+  // ==========================================
+  if (round.countdown > 0) {
+    ctx.save();
+    // 화면 어둡게 오버레이
+    ctx.fillStyle = 'rgba(8, 11, 16, 0.65)';
+    ctx.fillRect(0, 0, W, H);
+
+    const countInt = Math.ceil(round.countdown);
+    const frac = round.countdown - Math.floor(round.countdown); // 1.0 -> 0.0
+
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+
+    // 카운트 숫자 펄스 효과
+    const scale = 1 + (frac * 0.3);
+    ctx.font = `900 ${Math.round(80 * scale)}px system-ui, sans-serif`;
+    ctx.fillStyle = countInt === 1 ? '#00f0ff' : countInt === 2 ? '#ffd166' : '#ff7b72';
+    ctx.shadowColor = ctx.fillStyle;
+    ctx.shadowBlur = 30;
+    ctx.fillText(countInt, W / 2, H / 2 - 10);
+
+    // 준비 안내문
+    ctx.font = 'bold 16px system-ui, sans-serif';
+    ctx.fillStyle = '#e6edf3';
+    ctx.shadowBlur = 8;
+    ctx.letterSpacing = '4px';
+    ctx.fillText('GET READY', W / 2, H / 2 + 65);
     ctx.restore();
   }
 }
 
 function updateUI() {
-  uiTime.textContent = round.timeLeft.toFixed(1);
+  uiTime.textContent = round.elapsedTime.toFixed(1);
+  if (uiSpeed) {
+    uiSpeed.textContent = (NOTE_SPEED / INITIAL_NOTE_SPEED).toFixed(1) + 'x';
+  }
+  if (uiScore) {
+    uiScore.textContent = formatScore(round.score);
+  }
+  if (uiMultiplier) uiMultiplier.textContent = `x${getComboMultiplier().toFixed(1)}`;
   uiSuccess.textContent = round.success;
-  uiFail.textContent = round.fail;
   uiBest.textContent = saved.bestTime.toFixed(1) + '초';
+  if (uiBestScore) uiBestScore.textContent = formatScore(saved.bestScore);
 }
 
 function hideOverlay() { overlay.classList.add('hidden'); }
 
 window.addEventListener('keydown', (e) => {
   if (e.repeat) return;
-  
-  if (e.code === 'BracketLeft') { changeSpeed(-SPEED_STEP); return; }
-  if (e.code === 'BracketRight') { changeSpeed(SPEED_STEP); return; }
 
-  if (round.running && !round.paused && !round.gameOver) {
-    if (e.code === LANE_KEYS.top)    { judge(0); return; }
-    if (e.code === LANE_KEYS.bottom) { judge(1); return; }
+  // ESC 키로만 일시정지 / 재개 전환 (P 키 단축키 제거)
+  if (e.code === 'Escape') {
+    togglePause();
+    return;
   }
-  if (e.code === 'KeyP') { togglePause(); return; }
+
+  const lane = e.code === LANE_KEYS.top ? 0 : e.code === LANE_KEYS.bottom ? 1 : -1;
+  if (lane >= 0) {
+    if (round.keyDown[lane]) return;
+    round.keyDown[lane] = true;
+    // 카운트다운 중이거나 멈춘 상태에서는 판정만 무시하고 키의 물리 상태는 추적한다.
+    if (round.running && !round.paused && round.countdown <= 0 && !round.gameOver) judge(lane);
+    return;
+  }
+
   if (e.code === 'KeyR') { startGame(); return; }
   if (e.code === 'KeyM') { toggleMute(); return; }
 });
 
-window.addEventListener('blur', () => {
-  if (round.running && !round.paused && !round.gameOver) togglePause();
+window.addEventListener('keyup', (e) => {
+  if (e.code === LANE_KEYS.top) {
+    round.keyDown[0] = false;
+    releaseLane(0);
+  }
+  if (e.code === LANE_KEYS.bottom) {
+    round.keyDown[1] = false;
+    releaseLane(1);
+  }
 });
 
-window.addEventListener('resize', () => {});
+window.addEventListener('blur', () => {
+  round.keyDown = [false, false];
+  round.activeLongNotes = [null, null];
+  for (const note of round.notes) if (note.long) note.holding = false;
+  if (round.running && (!round.paused || round.countdown > 0) && !round.gameOver) {
+    // 탭 포커스 아웃 시 카운트다운 중이더라도 안전하게 일시정지
+    if (round.countdown > 0) {
+      round.countdown = 0;
+      round.paused = true;
+      btnPause.classList.add('active');
+      btnPause.textContent = '재개 (ESC)';
+      showPauseOverlay();
+    } else {
+      togglePause();
+    }
+  }
+});
+
+window.addEventListener('resize', () => render());
 
 overlayBtn.addEventListener('click', () => {
   if (round.paused) togglePause(); else startGame();
@@ -625,9 +2211,7 @@ btnPause.addEventListener('click', togglePause);
 btnRestart.addEventListener('click', startGame);
 btnMute.addEventListener('click', toggleMute);
 
-btnSpeedDown.addEventListener('click', () => changeSpeed(-SPEED_STEP));
-btnSpeedUp.addEventListener('click', () => changeSpeed(SPEED_STEP));
-
+loadGameAssets();
 updateMuteButton(); updateUI(); render(); requestAnimationFrame(loop);
 </script>
 </body>
